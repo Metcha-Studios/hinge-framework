@@ -155,6 +155,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Aes256Cipher.h" />
     <ClInclude Include="Base64Wrapper.h" />
     <ClInclude Include="Cipher.h" />
     <ClInclude Include="framework.h" />
@@ -163,6 +164,7 @@
     <ClInclude Include="uuidV4.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Aes256Cipher.cpp" />
     <ClCompile Include="Base64Wrapper.cpp" />
     <ClCompile Include="Cipher.cpp" />
     <ClCompile Include="dllmain.cpp" />
