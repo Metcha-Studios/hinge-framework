@@ -51,7 +51,7 @@ namespace hinge_framework {
         }
         generated_key[KEY_LENGTH] = '\0';
 
-        key.id_ = uuid::uuidV4Generator();
+        key.id_ = hinge_framework::uuidV4Generator();
         key.key_ = std::string(generated_key);
 
         delete[] generated_key;

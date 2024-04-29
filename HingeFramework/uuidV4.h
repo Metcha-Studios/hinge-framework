@@ -2,6 +2,6 @@
 
 #include <iostream>
 
-namespace uuid {
+namespace hinge_framework {
     std::string uuidV4Generator();
 }

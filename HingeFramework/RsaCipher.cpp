@@ -33,7 +33,7 @@ namespace hinge_framework {
     Cipher::KeyPair RsaCipher::generateKeyPair(const uint16_t key_length) {
         KeyPair key_pair;
 
-        key_pair.id_ = uuid::uuidV4Generator();
+        key_pair.id_ = hinge_framework::uuidV4Generator();
 
         EVP_PKEY_CTX* ctx = EVP_PKEY_CTX_new_id(EVP_PKEY_RSA, nullptr);
         if (!ctx) {
