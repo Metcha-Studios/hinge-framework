@@ -5,7 +5,7 @@
 #include <string>
 #include <random>
 
-namespace uuid {
+namespace hinge_framework {
     static std::random_device              rd;
     static std::mt19937                    gen(rd());
     static std::uniform_int_distribution<> dis(0, 15);

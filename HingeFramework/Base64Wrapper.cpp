@@ -5,7 +5,7 @@
 #include <vector>
 #include <algorithm>
 
-namespace Base64Wrapper {
+namespace hinge_framework {
     const std::string base64_chars =
         "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
