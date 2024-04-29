@@ -1,5 +1,5 @@
-#include "RsaCipher.h"
 #include "pch.h"
+#include "RsaCipher.h"
 
 #include <math.h>
 #include <string>
@@ -21,12 +21,10 @@ namespace hinge_framework {
     */
 
     RsaCipher::RsaCipher() {
-        // 初始化OpenSSL库
         OpenSSL_add_all_algorithms();
     }
 
     RsaCipher::~RsaCipher() {
-        // 清理OpenSSL资源
         EVP_cleanup();
     }
 

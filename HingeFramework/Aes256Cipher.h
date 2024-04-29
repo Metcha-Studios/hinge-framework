@@ -2,6 +2,12 @@
 #ifndef AES256_CIPHER_H
 #define AES256_CIPHER_H
 
+#ifdef HINGE_EXPORTS
+#define HINGE_API __declspec(dllexport)
+#else
+#define HINGE_API __declspec(dllimport)
+#endif
+
 #include <iostream>
 #include <string>
 #include <cstdint> // 用于 uint16_t
@@ -14,7 +20,7 @@ namespace hinge_framework {
     /**
      * @brief AES 加密解密类。
      */
-    class Aes256Cipher : public Cipher {
+    class HINGE_API Aes256Cipher : public Cipher {
     public:
         /**
          * @brief 构造函数，初始化 OpenSSL 库。

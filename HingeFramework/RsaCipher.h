@@ -2,6 +2,12 @@
 #ifndef RSA_CIPHER_H
 #define RSA_CIPHER_H
 
+#ifdef HINGE_EXPORTS
+#define HINGE_API __declspec(dllexport)
+#else
+#define HINGE_API __declspec(dllimport)
+#endif
+
 #include <iostream>
 #include <string>
 #include <cstdint> // 用于 uint16_t
@@ -14,7 +20,7 @@ namespace hinge_framework {
     /**
      * @brief RSA 加密解密类。
      */
-    class RsaCipher : public Cipher {
+    class HINGE_API RsaCipher : public Cipher {
     public:
         /**
          * @brief 构造函数，初始化 OpenSSL 库并设置固定密钥对。

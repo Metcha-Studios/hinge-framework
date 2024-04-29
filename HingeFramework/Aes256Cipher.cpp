@@ -1,5 +1,5 @@
-#include "Aes256Cipher.h"
 #include "pch.h"
+#include "Aes256Cipher.h"
 
 #include <random>
 #include <string>
@@ -24,12 +24,10 @@ namespace hinge_framework {
     */
 
     Aes256Cipher::Aes256Cipher() {
-        // 初始化OpenSSL库
         OpenSSL_add_all_algorithms();
     }
 
     Aes256Cipher::~Aes256Cipher() {
-        // 清理OpenSSL资源
         EVP_cleanup();
     }
 

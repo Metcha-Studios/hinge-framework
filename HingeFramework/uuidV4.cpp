@@ -1,5 +1,5 @@
-#include "uuidV4.h"
 #include "pch.h"
+#include "uuidV4.h"
 
 #include <sstream>
 #include <string>
@@ -11,7 +11,7 @@ namespace hinge_framework {
     static std::uniform_int_distribution<> dis(0, 15);
     static std::uniform_int_distribution<> dis2(8, 11);
 
-    std::string uuidV4Generator() {
+    const char* uuidV4Generator() {
         std::stringstream ss;
         int i;
         ss << std::hex;
@@ -35,6 +35,6 @@ namespace hinge_framework {
         for (i = 0; i < 12; i++) {
             ss << dis(gen);
         };
-        return ss.str();
+        return ss.str().c_str();
     }
 }

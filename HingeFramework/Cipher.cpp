@@ -1,5 +1,5 @@
-#include "Cipher.h"
 #include "pch.h"
+#include "Cipher.h"
 
 #include <string>
 #include <fstream>

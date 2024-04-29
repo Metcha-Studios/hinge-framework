@@ -1,5 +1,5 @@
-#include "Base64Wrapper.h"
 #include "pch.h"
+#include "Base64Wrapper.h"
 
 #include <string>
 #include <vector>
@@ -9,7 +9,7 @@ namespace hinge_framework {
     const std::string base64_chars =
         "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
-    std::string encodeBase64(const std::string& plain_text) {
+    const char* encodeBase64(const std::string& plain_text) {
         std::string base64_result;
         int i = 0;
         int j = 0;
@@ -50,10 +50,10 @@ namespace hinge_framework {
             }
         }
 
-        return base64_result;
+        return base64_result.c_str();
     }
 
-    std::string decodeBase64(const std::string& base64_text) {
+    const char* decodeBase64(const std::string& base64_text) {
         std::string plain_result;
         int i = 0;
         unsigned char char_array_4[4];
@@ -99,6 +99,6 @@ namespace hinge_framework {
             }
         }
 
-        return plain_result;
+        return plain_result.c_str();
     }
 }
