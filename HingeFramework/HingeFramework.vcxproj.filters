@@ -13,6 +13,9 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Header Files\Exports">
+      <UniqueIdentifier>{f14b1a29-2066-49fa-863e-9041a89d1de4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -24,17 +27,17 @@
     <ClInclude Include="Cipher.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="uuidV4.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="include\HingeFramework\Aes256Cipher.h">
+      <Filter>Header Files\Exports</Filter>
     </ClInclude>
-    <ClInclude Include="RsaCipher.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="include\HingeFramework\Base64Wrapper.h">
+      <Filter>Header Files\Exports</Filter>
     </ClInclude>
-    <ClInclude Include="Base64Wrapper.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="include\HingeFramework\RsaCipher.h">
+      <Filter>Header Files\Exports</Filter>
     </ClInclude>
-    <ClInclude Include="Aes256Cipher.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="include\HingeFramework\uuidV4.h">
+      <Filter>Header Files\Exports</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

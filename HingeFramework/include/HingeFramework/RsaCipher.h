@@ -14,7 +14,7 @@
 #include <openssl/evp.h> // OpenSSL EVP_PKEY
 #include <nlohmann/json.hpp> // 用于 JSON 结构
 
-#include "Cipher.h"
+#include "../../Cipher.h"
 
 namespace hinge_framework {
     /**

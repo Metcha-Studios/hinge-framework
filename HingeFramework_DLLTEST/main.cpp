@@ -2,14 +2,15 @@
 //
 
 #include <iostream>
-#include <RsaCipher.h>
+#include <HingeFramework/RsaCipher.h>
+#include <HingeFramework/Aes256Cipher.h>
 
-int main()
-{
+int32_t main(int32_t argc, char* argv[]) {
     hinge_framework::RsaCipher rsa;
-    hinge_framework::RsaCipher::KeyPair key_pair = rsa.generateKeyPair(2048);
-    
-    std::cout << "Hello World!\n" << key_pair.public_key_ << std::endl;
+    hinge_framework::Aes256Cipher aes256;
+    hinge_framework::Aes256Cipher::Key key = aes256.generateKey();
+
+    std::cout << "Hello World!\n\n" << key.key_ << std::endl;
 
     system("pause");
     return 0;

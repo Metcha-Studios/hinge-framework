@@ -156,13 +156,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="Aes256Cipher.h" />
-    <ClInclude Include="Base64Wrapper.h" />
     <ClInclude Include="Cipher.h" />
     <ClInclude Include="framework.h" />
+    <ClInclude Include="include\HingeFramework\Aes256Cipher.h" />
+    <ClInclude Include="include\HingeFramework\Base64Wrapper.h" />
+    <ClInclude Include="include\HingeFramework\RsaCipher.h" />
+    <ClInclude Include="include\HingeFramework\uuidV4.h" />
     <ClInclude Include="pch.h" />
-    <ClInclude Include="RsaCipher.h" />
-    <ClInclude Include="uuidV4.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Aes256Cipher.cpp" />

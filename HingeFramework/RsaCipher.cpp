@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "RsaCipher.h"
+#include "include/HingeFramework/RsaCipher.h"
 
 #include <math.h>
 #include <string>
@@ -13,7 +13,7 @@
 #include <nlohmann/json.hpp>
 
 #include "Cipher.h"
-#include "uuidV4.h"
+#include "include/HingeFramework/uuidV4.h"
 
 namespace hinge_framework {
     /*

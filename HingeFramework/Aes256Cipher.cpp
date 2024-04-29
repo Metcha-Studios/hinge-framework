@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "Aes256Cipher.h"
+#include "include/HingeFramework/Aes256Cipher.h"
 
 #include <random>
 #include <string>
@@ -15,8 +15,8 @@
 #include <nlohmann/json.hpp>
 
 #include "Cipher.h"
-#include "RsaCipher.h"
-#include "uuidV4.h"
+#include "include/HingeFramework/RsaCipher.h"
+#include "include/HingeFramework/uuidV4.h"
 
 namespace hinge_framework {
     /*

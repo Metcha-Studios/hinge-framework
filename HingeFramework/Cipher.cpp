@@ -9,8 +9,8 @@
 #include <openssl/evp.h>
 #include <nlohmann/json.hpp>
 
-#include "uuidV4.h"
-#include "RsaCipher.h"
+#include "include/HingeFramework/uuidV4.h"
+#include "include/HingeFramework/RsaCipher.h"
 
 namespace hinge_framework {
     /*
