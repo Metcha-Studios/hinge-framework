@@ -1,6 +1,7 @@
 #include "RsaCipher.h"
+#include "pch.h"
 
-#include <iostream>
+#include <math.h>
 #include <string>
 #include <fstream>
 #include <filesystem>
@@ -204,7 +205,7 @@ namespace hinge_framework {
         std::string encrypted_text;
 
         for (size_t i = 0; i < plaintext.size(); i += block_size) {
-            size_t len = std::min(block_size, plaintext.size() - i);
+            size_t len = min(block_size, plaintext.size() - i);
 
             const std::string block = plaintext.substr(i, len);
             std::string encrypted_block;
@@ -251,7 +252,7 @@ namespace hinge_framework {
         std::string decrypted_text;
 
         for (size_t i = 0; i < ciphertext.size(); i += block_size) {
-            size_t len = std::min(block_size, ciphertext.size() - i);
+            size_t len = min(block_size, ciphertext.size() - i);
 
             const std::string block = ciphertext.substr(i, len);
             std::string decrypted_block;

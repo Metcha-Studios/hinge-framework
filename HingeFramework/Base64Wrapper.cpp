@@ -1,6 +1,6 @@
 #include "Base64Wrapper.h"
+#include "pch.h"
 
-#include <iostream>
 #include <string>
 #include <vector>
 #include <algorithm>

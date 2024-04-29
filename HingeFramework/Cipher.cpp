@@ -1,6 +1,6 @@
 #include "Cipher.h"
+#include "pch.h"
 
-#include <iostream>
 #include <string>
 #include <fstream>
 #include <filesystem>
