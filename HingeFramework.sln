@@ -5,6 +5,8 @@ VisualStudioVersion = 17.9.34714.143
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HingeFramework", "HingeFramework\HingeFramework.vcxproj", "{0DFECCE2-AF1D-4C0B-B005-89A4A16B212C}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HingeFramework_DLLTEST", "HingeFramework_DLLTEST\HingeFramework_DLLTEST.vcxproj", "{D80F3143-17D9-401D-ACB3-2FFFE9C6271F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -21,6 +23,14 @@ Global
 		{0DFECCE2-AF1D-4C0B-B005-89A4A16B212C}.Release|x64.Build.0 = Release|x64
 		{0DFECCE2-AF1D-4C0B-B005-89A4A16B212C}.Release|x86.ActiveCfg = Release|Win32
 		{0DFECCE2-AF1D-4C0B-B005-89A4A16B212C}.Release|x86.Build.0 = Release|Win32
+		{D80F3143-17D9-401D-ACB3-2FFFE9C6271F}.Debug|x64.ActiveCfg = Debug|x64
+		{D80F3143-17D9-401D-ACB3-2FFFE9C6271F}.Debug|x64.Build.0 = Debug|x64
+		{D80F3143-17D9-401D-ACB3-2FFFE9C6271F}.Debug|x86.ActiveCfg = Debug|Win32
+		{D80F3143-17D9-401D-ACB3-2FFFE9C6271F}.Debug|x86.Build.0 = Debug|Win32
+		{D80F3143-17D9-401D-ACB3-2FFFE9C6271F}.Release|x64.ActiveCfg = Release|x64
+		{D80F3143-17D9-401D-ACB3-2FFFE9C6271F}.Release|x64.Build.0 = Release|x64
+		{D80F3143-17D9-401D-ACB3-2FFFE9C6271F}.Release|x86.ActiveCfg = Release|Win32
+		{D80F3143-17D9-401D-ACB3-2FFFE9C6271F}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
