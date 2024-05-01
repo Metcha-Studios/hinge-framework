@@ -7,6 +7,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HingeFramework", "HingeFram
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HingeFramework_DLLTEST", "HingeFramework_DLLTEST\HingeFramework_DLLTEST.vcxproj", "{D80F3143-17D9-401D-ACB3-2FFFE9C6271F}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HingeFramework_PYMODULE", "HingeFramework_PYMODULE\HingeFramework_PYMODULE.vcxproj", "{42DA9E06-F6A8-4D5B-B064-C8C4158EA543}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -31,6 +33,14 @@ Global
 		{D80F3143-17D9-401D-ACB3-2FFFE9C6271F}.Release|x64.Build.0 = Release|x64
 		{D80F3143-17D9-401D-ACB3-2FFFE9C6271F}.Release|x86.ActiveCfg = Release|Win32
 		{D80F3143-17D9-401D-ACB3-2FFFE9C6271F}.Release|x86.Build.0 = Release|Win32
+		{42DA9E06-F6A8-4D5B-B064-C8C4158EA543}.Debug|x64.ActiveCfg = Debug|x64
+		{42DA9E06-F6A8-4D5B-B064-C8C4158EA543}.Debug|x64.Build.0 = Debug|x64
+		{42DA9E06-F6A8-4D5B-B064-C8C4158EA543}.Debug|x86.ActiveCfg = Debug|Win32
+		{42DA9E06-F6A8-4D5B-B064-C8C4158EA543}.Debug|x86.Build.0 = Debug|Win32
+		{42DA9E06-F6A8-4D5B-B064-C8C4158EA543}.Release|x64.ActiveCfg = Release|x64
+		{42DA9E06-F6A8-4D5B-B064-C8C4158EA543}.Release|x64.Build.0 = Release|x64
+		{42DA9E06-F6A8-4D5B-B064-C8C4158EA543}.Release|x86.ActiveCfg = Release|Win32
+		{42DA9E06-F6A8-4D5B-B064-C8C4158EA543}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

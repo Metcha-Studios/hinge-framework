@@ -2,11 +2,15 @@
 #ifndef AES256_CIPHER_H
 #define AES256_CIPHER_H
 
+#ifndef HINGE_API
+
 #ifdef HINGE_EXPORTS
 #define HINGE_API __declspec(dllexport)
 #else
 #define HINGE_API __declspec(dllimport)
 #endif
+
+#endif // HINGE_API
 
 #include <iostream>
 #include <string>

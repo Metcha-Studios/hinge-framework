@@ -24,7 +24,7 @@ namespace hinge_framework {
 
 
         // 写死密钥对
-        this->ent_key_pair_->public_key_ = R"(-----BEGIN PUBLIC KEY-----
+        this->ent_key_pair_.public_key_ = R"(-----BEGIN PUBLIC KEY-----
 MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA4SGZ8owR01HU6EueL8qB
 +faRT9e7Gs/K4XLbo5Q6QGNbPp+4/nklzX+waxvU3XkYUjjM3criL0jm3IIC2N0w
 RHgJiTr+zfe3OTVscLLZxttZhGCKVZK3dFrhtHm3qL+erS92a7Lt9cRROnv3hx/n
@@ -33,7 +33,7 @@ IMLPsC9gnc79Q4kD0X1+YsHcjgkfBuK65qTlhH8ywcJH3WpHY0h0CIgevtG8J4GV
 8s982rUPcELt8cKGJKA2byuRKusrnwhlDyhPilCQGxq6q53uyi98kTTm4Z6tA53G
 BQIDAQAB
 -----END PUBLIC KEY-----)";
-        this->ent_key_pair_->private_key_ = R"(-----BEGIN PRIVATE KEY-----
+        this->ent_key_pair_.private_key_ = R"(-----BEGIN PRIVATE KEY-----
 MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDhIZnyjBHTUdTo
 S54vyoH59pFP17saz8rhctujlDpAY1s+n7j+eSXNf7BrG9TdeRhSOMzdyuIvSObc
 ggLY3TBEeAmJOv7N97c5NWxwstnG21mEYIpVkrd0WuG0ebeov56tL3Zrsu31xFE6
@@ -68,13 +68,13 @@ tb/HErXAn5wHrxUoNAw9Q69K
         EVP_cleanup();
     }
 
-    void Cipher::setEntKeyPair(const RsaCipher::KeyPair& ent_key_pair) {
-        this->ent_key_pair_->public_key_ = ent_key_pair.public_key_;
-        this->ent_key_pair_->private_key_ = ent_key_pair.private_key_;
+    void Cipher::setEntKeyPair(const KeyPair& ent_key_pair) {
+        this->ent_key_pair_.public_key_ = ent_key_pair.public_key_;
+        this->ent_key_pair_.private_key_ = ent_key_pair.private_key_;
         return;
     }
 
-    RsaCipher::KeyPair* Cipher::getEntKeyPair() const {
+    KeyPair Cipher::getEntKeyPair() const {
         return this->ent_key_pair_;
     }
 
@@ -94,7 +94,7 @@ tb/HErXAn5wHrxUoNAw9Q69K
         const std::string serialized_keys = keys_json.dump(4);
 
         // 使用 ENT 密钥加密 JSON 数据
-        const std::string encrypted_keys = rsa.encrypt(this->ent_key_pair_->public_key_, serialized_keys);
+        const std::string encrypted_keys = rsa.encrypt(this->ent_key_pair_.public_key_, serialized_keys);
 
         // 确保文件所在路径存在
         std::filesystem::create_directories(std::filesystem::path(ent_file_path).parent_path());

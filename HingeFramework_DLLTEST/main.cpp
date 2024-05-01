@@ -8,9 +8,11 @@
 int32_t main(int32_t argc, char* argv[]) {
     hinge_framework::RsaCipher rsa;
     hinge_framework::Aes256Cipher aes256;
-    hinge_framework::Aes256Cipher::Key key = aes256.generateKey();
+    hinge_framework::Key key = aes256.generateKey();
 
-    std::cout << "Hello World!\n\n" << key.key_ << std::endl;
+    std::cout << "Hello World!\n\n"
+        << key.key_ << "\n"
+        << key.id_ << std::endl;
 
     system("pause");
     return 0;

@@ -10,6 +10,23 @@
 
 namespace hinge_framework {
     /**
+     * @brief 单密钥结构体，包含密钥ID和密钥。
+     */
+    struct Key {
+        std::string id_; /**< 密钥的唯一标识符 */
+        std::string key_; /**< 密钥 */
+    };
+
+    /**
+     * @brief 密钥对结构体，包含密钥ID、公钥和私钥。
+     */
+    struct KeyPair {
+        std::string id_; /**< 密钥对的唯一标识符 */
+        std::string public_key_; /**< 公钥 */
+        std::string private_key_; /**< 私钥 */
+    };
+
+    /**
      * @brief 加密解密抽象类。
      */
     class Cipher {
@@ -25,23 +42,6 @@ namespace hinge_framework {
         ~Cipher();
 
         /**
-         * @brief 单密钥结构体，包含密钥ID和密钥。
-         */
-        struct Key {
-            std::string id_; /**< 密钥的唯一标识符 */
-            std::string key_; /**< 密钥 */
-        };
-
-        /**
-         * @brief 密钥对结构体，包含密钥ID、公钥和私钥。
-         */
-        struct KeyPair {
-            std::string id_; /**< 密钥对的唯一标识符 */
-            std::string public_key_; /**< 公钥 */
-            std::string private_key_; /**< 私钥 */
-        };
-
-        /**
          * @brief 设置用于 ENT 文件操作的密钥对。
          *
          * @param ent_key_pair 用于 ENT 文件操作的密钥对
@@ -54,7 +54,7 @@ namespace hinge_framework {
          *
          * @return 用于 ENT 文件操作的密钥对
          */
-        KeyPair* getEntKeyPair() const;
+        KeyPair getEntKeyPair() const;
 
         /**
          * @brief 检查密钥是否存在于密钥文件中。
@@ -124,7 +124,7 @@ namespace hinge_framework {
         virtual bool decryptDirectory(const std::string& key, const std::string input_directory, const std::string output_directory) const = 0;
 
     protected:
-        KeyPair* ent_key_pair_ = new KeyPair(); /**< 私有成员属性，用于 ENT 密钥文件操作的密钥对 */
+        KeyPair ent_key_pair_; /**< 私有成员属性，用于 ENT 密钥文件操作的密钥对 */
 
         /**
          * @brief 创建初始密钥二进制文件。

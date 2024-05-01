@@ -163,6 +163,7 @@
     <ClInclude Include="include\HingeFramework\RsaCipher.h" />
     <ClInclude Include="include\HingeFramework\uuidV4.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Aes256Cipher.cpp" />
@@ -177,6 +178,9 @@
     </ClCompile>
     <ClCompile Include="RsaCipher.cpp" />
     <ClCompile Include="uuidV4.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="HingeFramework.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

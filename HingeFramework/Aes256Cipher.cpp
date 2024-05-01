@@ -31,7 +31,7 @@ namespace hinge_framework {
         EVP_cleanup();
     }
 
-    Cipher::Key Aes256Cipher::generateKey() {
+    Key Aes256Cipher::generateKey() {
         Key key;
 
         const char* const CHARSET = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -57,7 +57,7 @@ namespace hinge_framework {
         return key;
     }
 
-    Cipher::Key Aes256Cipher::generateKey(const char* key_id) {
+    Key Aes256Cipher::generateKey(const char* key_id) {
         Key key;
 
         const char* const CHARSET = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -103,7 +103,7 @@ namespace hinge_framework {
         return is_succeed;
     }
 
-    Cipher::Key Aes256Cipher::readKeyFromFile(const char* key_id, const char* file_path) {
+    Key Aes256Cipher::readKeyFromFile(const char* key_id, const char* file_path) {
         const RsaCipher rsa;
         Key key;
 
@@ -117,7 +117,7 @@ namespace hinge_framework {
         in_file.close();
 
         // 解密密钥文件
-        const nlohmann::ordered_json keys_json = nlohmann::ordered_json::parse(rsa.decrypt(getEntKeyPair()->private_key_, encryptedKeyData));
+        const nlohmann::ordered_json keys_json = nlohmann::ordered_json::parse(rsa.decrypt(getEntKeyPair().private_key_, encryptedKeyData));
 
         // 检查指定的密钥 ID 是否存在
         if (!isKeyExists(key_id, file_path)) {
@@ -146,7 +146,7 @@ namespace hinge_framework {
         in_file.close();
 
         // 解密密钥文件
-        const nlohmann::ordered_json keys_json = nlohmann::ordered_json::parse(rsa.decrypt(getEntKeyPair()->private_key_, encrypted_key_data));
+        const nlohmann::ordered_json keys_json = nlohmann::ordered_json::parse(rsa.decrypt(getEntKeyPair().private_key_, encrypted_key_data));
 
         // 检查密钥是否存在
         return keys_json["aes256_keys"].find(key_id) != keys_json["aes256_keys"].end();
@@ -404,7 +404,7 @@ namespace hinge_framework {
         in_file.close();
 
         // 解密密钥文件
-        keys_json = nlohmann::ordered_json::parse(rsa.decrypt(getEntKeyPair()->private_key_, encrypted_key_data));
+        keys_json = nlohmann::ordered_json::parse(rsa.decrypt(getEntKeyPair().private_key_, encrypted_key_data));
 
         // 添加新的密钥对
         keys_json["aes256_keys"][key.id_] = key.key_;
@@ -415,7 +415,7 @@ namespace hinge_framework {
         //std::cout << serializedKeys << std::endl;
 
         // 使用 ENT 密钥文件所用密钥加密 JSON 数据
-        const std::string encrypted_keys = rsa.encrypt(getEntKeyPair()->public_key_, serialized_keys);
+        const std::string encrypted_keys = rsa.encrypt(getEntKeyPair().public_key_, serialized_keys);
 
         // 将加密后的数据写入文件
         std::ofstream out_file(file_path, std::ios::out | std::ios::binary);
