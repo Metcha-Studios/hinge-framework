@@ -3,6 +3,9 @@
 #endif
 
 %include <windows.i>
+%include <cstring.i>
+%include <std_string.i>
+%include <std_vector.i>
 
 %module hinge_framework
 

@@ -20,8 +20,8 @@ swig -python -c++ -I%INCLUDE_PATH% -outdir %OUTPUT_PATH% -o %OUTPUT_PATH%\hinge_
 
 echo SWIG wrapper code generated successfully!
 
-python %SETUP_PATH% build_ext
+rem python %SETUP_PATH% build_ext
 
-echo Python module compiled successfully!
+rem echo Python module compiled successfully!
 
 pause
