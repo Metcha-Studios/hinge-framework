@@ -16,6 +16,7 @@
  */
 #pragma once
 
+#define SQLITECPP_COMPILE_DLL
 
 // Include useful headers of SQLiteC++
 #include <SQLiteCpp/SQLiteCppExport.h>
