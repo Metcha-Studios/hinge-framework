@@ -12,7 +12,6 @@
 
 #endif // HINGE_API
 
-#include <iostream>
 #include <string>
 #include <cstdint> // ”√”⁄ uint16_t
 #include <openssl/evp.h> // OpenSSL EVP_PKEY

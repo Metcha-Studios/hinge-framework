@@ -2,10 +2,13 @@
 //
 
 #include <iostream>
+#include <string>
 #include <sstream>
+#include <vector>
+#include <SQLiteCpp/SQLiteCpp.h>
 #include <HingeFramework/RsaCipher.h>
 #include <HingeFramework/Aes256Cipher.h>
-#include <SQLiteCpp/SQLiteCpp.h>
+#include <HingeFramework/DatabaseHandler.h>
 
 // 定义学生类
 class Student {
@@ -25,16 +28,21 @@ public:
 // 数据库操作类
 class Database {
 private:
-    SQLite::Database db;
+    SQLite::Database* db;
 
 public:
-    Database(const std::string& dbName, const std::string& encryptionKey) : db(dbName.c_str(), SQLite::OPEN_READWRITE | SQLite::OPEN_CREATE) {
-        db.key(encryptionKey.c_str());
+    Database(const std::string& dbName, const std::string& encryptionKey) {
+        db = new SQLite::Database(dbName.c_str(), SQLite::OPEN_READWRITE | SQLite::OPEN_CREATE);
+        db->key(encryptionKey.c_str());
+    }
+
+    ~Database() {
+        delete this->db;
     }
 
     void createTable() {
         try {
-            db.exec("CREATE TABLE IF NOT EXISTS students (id INTEGER PRIMARY KEY, name TEXT, score REAL)");
+            db->exec("CREATE TABLE IF NOT EXISTS students (id INTEGER PRIMARY KEY, name TEXT, score REAL)");
         }
         catch (const std::exception e) {
             std::cerr << "捕获到异常: " << e.what() << std::endl;
@@ -43,7 +51,7 @@ public:
 
     void insertStudent(const Student& student) {
         try {
-            SQLite::Statement query(db, "INSERT INTO students (id, name, score) VALUES (?, ?, ?)");
+            SQLite::Statement query(*db, "INSERT INTO students (id, name, score) VALUES (?, ?, ?)");
             query.bind(1, student.getId());
             query.bind(2, student.getName());
             query.bind(3, student.getScore());
@@ -55,13 +63,13 @@ public:
     }
 
     void deleteStudent(int id) {
-        SQLite::Statement query(db, "DELETE FROM students WHERE id = ?");
+        SQLite::Statement query(*db, "DELETE FROM students WHERE id = ?");
         query.bind(1, id);
         query.exec();
     }
 
     void updateStudent(const Student& student) {
-        SQLite::Statement query(db, "UPDATE students SET name = ?, score = ? WHERE id = ?");
+        SQLite::Statement query(*db, "UPDATE students SET name = ?, score = ? WHERE id = ?");
         query.bind(1, student.getName());
         query.bind(2, student.getScore());
         query.bind(3, student.getId());
@@ -69,7 +77,7 @@ public:
     }
 
     Student getStudent(int id) {
-        SQLite::Statement query(db, "SELECT * FROM students WHERE id = ?");
+        SQLite::Statement query(*db, "SELECT * FROM students WHERE id = ?");
         query.bind(1, id);
         if (query.executeStep()) {
             int studentId = query.getColumn(0).getInt();
@@ -82,7 +90,7 @@ public:
 
     std::vector<Student> getAllStudents() {
         std::vector<Student> allStudents;
-        SQLite::Statement query(db, "SELECT * FROM students");
+        SQLite::Statement query(*db, "SELECT * FROM students");
         while (query.executeStep()) {
             int id = query.getColumn(0).getInt();
             std::string name = query.getColumn(1).getString();
@@ -117,7 +125,7 @@ std::string centerAlign(const std::string& text, uint16_t width) {
     return ss.str();
 }
 
-int32_t main(int32_t argc, char* argv[]) {
+int32_t task0() {
     const char* const KEY_FILE_PATH = "./assets-test/data/keys.ent";
     const char* const DB_FILE_PATH = "./assets-test/data/scores.dat";
     const char* const KEY_ID0 = "2898db5e-c31b-4837-946d-d4fc3f02ef09";
@@ -236,8 +244,58 @@ int32_t main(int32_t argc, char* argv[]) {
         }
     } while (choice != 6);
 
-    system("pause");
     return 0;
+}
+
+int32_t task1() {
+    const char* const KEY_FILE_PATH = "./assets-test/data/keys.ent";
+    const char* const DB_FILE_PATH = "./assets-test/data/scores.dat";
+    const char* const KEY_ID0 = "2898db5e-c31b-4837-946d-d4fc3f02ef09";
+
+    hinge_framework::Aes256Cipher aes256;
+    hinge_framework::RsaCipher rsa;
+    hinge_framework::Key aes256_key0;
+
+    try {
+        if (!aes256.isKeyExists(KEY_ID0, KEY_FILE_PATH)) {
+            aes256_key0 = aes256.generateKey(KEY_ID0);
+            if (aes256.writeKeyToFile(aes256_key0, KEY_FILE_PATH)) {
+                std::cout << "文件创建并写入成功！" << std::endl;
+            }
+            else {
+                std::cout << "文件创建并写入失败！" << std::endl;
+            }
+        }
+    }
+    catch (const std::exception e) {
+        std::cerr << "捕获到异常: " << e.what() << std::endl;
+    }
+
+    aes256_key0 = aes256.readKeyFromFile(KEY_ID0, KEY_FILE_PATH);
+
+    std::cout << "Key ID: " << aes256_key0.id_ << "\n"
+        << "Key: " << aes256_key0.key_ << "\n\n" << std::endl;
+
+    // Initialize DatabaseHandler with database file path and encryption key
+    hinge_framework::DatabaseHandler handler(DB_FILE_PATH, aes256_key0.key_);
+
+    // Export database to Excel file
+    std::string outputPath = "./assets-test/output/output.xlsx";
+    if (handler.exportToExcel(outputPath, 128, 212)) {
+        std::cout << "Database exported successfully to: " << outputPath << std::endl;
+    }
+    else {
+        std::cerr << "Error exporting database." << std::endl;
+    }
+
+    return 0;
+}
+
+int32_t main(int32_t argc, char* argv[]) {
+    int32_t main_return = task1();
+
+    system("pause");
+    return main_return;
 }
 
 // Run program: Ctrl + F5 or Debug > Start Without Debugging menu
