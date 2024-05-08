@@ -29,20 +29,30 @@ public:
 class Database {
 private:
     SQLite::Database* db;
+    hinge_framework::DatabaseHandler* handler;
 
 public:
     Database(const std::string& dbName, const std::string& encryptionKey) {
         db = new SQLite::Database(dbName.c_str(), SQLite::OPEN_READWRITE | SQLite::OPEN_CREATE);
         db->key(encryptionKey.c_str());
+        handler = new hinge_framework::DatabaseHandler(dbName, encryptionKey);
     }
 
     ~Database() {
-        delete this->db;
+        if (this->db) {
+            delete this->db;
+            this->db = nullptr;
+        }
+        if (this->handler) {
+            delete this->handler;
+            this->handler = nullptr;
+        }
     }
 
     void createTable() {
         try {
             db->exec("CREATE TABLE IF NOT EXISTS students (id INTEGER PRIMARY KEY, name TEXT, score REAL)");
+            db->exec("CREATE TABLE IF NOT EXISTS TESTING_TABLE (TESTING_HEADER0 INTEGER PRIMARY KEY, TESTING_HEADER1 TEXT, TESTING_HEADER2 REAL)");
         }
         catch (const std::exception e) {
             std::cerr << "²¶»ñµ½Òì³£: " << e.what() << std::endl;
@@ -99,6 +109,10 @@ public:
         }
         return allStudents;
     }
+
+    bool exportToExcel(const char* outputPath) {
+        return handler->exportToExcel(outputPath, 96, 212);
+    }
 };
 
 void showMainMenu() {
@@ -108,7 +122,8 @@ void showMainMenu() {
     std::cout << "3. Update Student" << std::endl;
     std::cout << "4. Search Student" << std::endl;
     std::cout << "5. Show All Students" << std::endl;
-    std::cout << "6. Exit" << std::endl;
+    std::cout << "6. Export to Excel" << std::endl;
+    std::cout << "7. Exit" << std::endl;
 }
 
 std::string centerAlign(const std::string& text, uint16_t width) {
@@ -234,7 +249,20 @@ int32_t task0() {
             system("cls");
             break;
         }
-        case 6:
+        case 6: {
+            // Export database to Excel file
+            const char* outputPath = "./assets-test/output/scores.xlsx";
+            if (db.exportToExcel(outputPath)) {
+                std::cout << "Database exported successfully to: " << outputPath << std::endl;
+            }
+            else {
+                std::cerr << "Error exporting database." << std::endl;
+            }
+            system("pause");
+            system("cls");
+            break;
+        }
+        case 7:
             std::cout << "Exiting program..." << std::endl;
             break;
         default:
@@ -242,7 +270,7 @@ int32_t task0() {
             system("pause");
             system("cls");
         }
-    } while (choice != 6);
+    } while (choice != 7);
 
     return 0;
 }
@@ -280,8 +308,8 @@ int32_t task1() {
     hinge_framework::DatabaseHandler handler(DB_FILE_PATH, aes256_key0.key_);
 
     // Export database to Excel file
-    std::string outputPath = "./assets-test/output/output.xlsx";
-    if (handler.exportToExcel(outputPath, 128, 212)) {
+    const char* outputPath = "./assets-test/output/scores.xlsx";
+    if (handler.exportToExcel(outputPath, 96, 212)) {
         std::cout << "Database exported successfully to: " << outputPath << std::endl;
     }
     else {
@@ -292,7 +320,7 @@ int32_t task1() {
 }
 
 int32_t main(int32_t argc, char* argv[]) {
-    int32_t main_return = task1();
+    int32_t main_return = task0();
 
     system("pause");
     return main_return;

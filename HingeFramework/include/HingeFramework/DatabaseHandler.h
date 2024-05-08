@@ -21,22 +21,28 @@
 #include <libxl/libxl.h>
 
 namespace hinge_framework {
+    struct ColumnInfo {
+        std::string name;
+        std::string type;
+    };
+
     class HINGE_API DatabaseHandler {
     public:
         DatabaseHandler(const std::string& dbFilePath, const std::string& key);
         ~DatabaseHandler();
 
-        bool exportToExcel(std::string& outputPath, const uint16_t color_value_header, const uint16_t color_value_content_layer, const uint16_t color_value_content_base = 255);
+        bool exportToExcel(const char*& output_path, const uint16_t color_value_header, const uint16_t color_value_content_layer, const uint16_t color_value_content_base = 255);
 
     private:
-        std::wstring utf8ToWide(const std::string& utf8Str);
+        std::string db_file_path_;
+        std::string key_;
+        SQLite::Database* database_;
 
         bool openDatabase();
         void closeDatabase();
-
-        std::string dbFilePath_;
-        std::string key_;
-        SQLite::Database* database_;
+        std::wstring utf8ToWide(const std::string& utf8Str);
+        std::vector<ColumnInfo> getColumnInfo(const std::string& table_name);
+        void setRowHeightAndColumnWidth(libxl::Sheet* sheet, uint16_t row_height, const std::vector<hinge_framework::ColumnInfo>& column_info);
     };
 }
 
