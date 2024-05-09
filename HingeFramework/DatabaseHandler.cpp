@@ -170,6 +170,8 @@ bool hinge_framework::DatabaseHandler::exportToExcel(const char*& output_path, c
     libxl::Font* content_font0 = book->addFont();
 
     header_font->setBold(true);
+    header_font->setSize(10);
+    header_font->setName(L"Microsoft YaHei UI");
     header_font->setColor((color_value_header >= 128) ? libxl::COLOR_BLACK : libxl::COLOR_WHITE); // Set text color
     header_format->setFont(header_font);
     header_format->setAlignH(libxl::AlignH::ALIGNH_CENTER);
@@ -184,6 +186,8 @@ bool hinge_framework::DatabaseHandler::exportToExcel(const char*& output_path, c
     libxl::Color content_color1 = book->colorPack(color_value_content_layer, color_value_content_layer, color_value_content_layer); // Light gray color for even rows
 
     content_font0->setBold(false);
+    content_font0->setSize(10);
+    content_font0->setName(L"Microsoft YaHei UI");
     content_font0->setColor(libxl::COLOR_BLACK);
     content_format0->setFont(content_font0);
     content_format0->setAlignH(libxl::AlignH::ALIGNH_CENTER);
@@ -193,7 +197,10 @@ bool hinge_framework::DatabaseHandler::exportToExcel(const char*& output_path, c
 
     libxl::Format* content_format1 = book->addFormat();
     libxl::Font* content_font1 = book->addFont();
+
     content_font1->setBold(false);
+    content_font1->setSize(10);
+    content_font1->setName(L"Microsoft YaHei UI");
     content_format1->setFont(content_font1);
     content_format1->setAlignH(libxl::AlignH::ALIGNH_CENTER);
     content_format1->setAlignV(libxl::AlignV::ALIGNV_CENTER);
