@@ -3,8 +3,9 @@
 
 #include <cmath>
 #include <string>
+#include <sstream>
 #include <vector>
-#include <variant>
+#include <memory>
 #include <filesystem>
 #include <utf8.h>
 #include <sqlite3.h>
@@ -17,6 +18,90 @@ hinge_framework::DatabaseHandler::DatabaseHandler(const std::string& db_file_pat
 
 hinge_framework::DatabaseHandler::~DatabaseHandler() {
     closeDatabase();
+}
+
+bool hinge_framework::DatabaseHandler::tableExists(const std::string& table_name) {
+    // Check if the table exists in the database
+    std::string query = "SELECT name FROM sqlite_master WHERE type='table' AND name=?";
+    SQLite::Statement query_stmt(*this->database_, query);
+    query_stmt.bind(1, table_name);
+    return query_stmt.executeStep();
+}
+
+bool hinge_framework::DatabaseHandler::clearTable(const std::string& table_name) {
+    // Clear data from the table
+    std::string query = "DELETE FROM " + table_name;
+    SQLite::Statement query_stmt(*this->database_, query);
+    return query_stmt.exec();
+}
+
+bool hinge_framework::DatabaseHandler::importFromExcel(const char*& input_path) {
+    if (!openDatabase()) {
+        return false;
+    }
+
+    libxl::Book* book = xlCreateXMLBook();
+    book->setKey(L"libxl", L"windows-28232b0208c4ee0369ba6e68abv6v5i3");
+    if (!book) {
+        closeDatabase();
+        return false;
+    }
+
+    std::string input_path_str = input_path;
+    if (input_path_str.empty()) {
+        closeDatabase();
+        return false;
+    }
+
+    if (!book->load(utf8ToWide(input_path_str).c_str())) {
+        book->release();
+        closeDatabase();
+        return false;
+    }
+
+    try {
+        libxl::Sheet* sheet;
+        // Iterate over sheets in the workbook
+        for (size_t sheet_index = 0; sheet_index < book->sheetCount(); ++sheet_index) {
+            sheet = book->getSheet(sheet_index);
+            if (!sheet)
+                continue;
+
+            std::string table_name = wideToUtf8(sheet->name());
+
+            // Clear existing data in the table
+            std::string clear_table_query = "DELETE FROM " + table_name + ";";
+            database_->exec(clear_table_query);
+
+            // Get column names from the first row
+            std::vector<std::string> column_names;
+            for (size_t col = 0; col < sheet->lastCol(); ++col) {
+                std::string column_name = wideToUtf8(sheet->readStr(0, col));
+                column_names.push_back(column_name);
+            }
+
+            // Read data from the sheet and insert into the corresponding database table
+            for (size_t row = 1; row < sheet->lastRow(); ++row) {
+                std::stringstream insert_query;
+                insert_query << "INSERT INTO " << table_name << " VALUES (";
+                for (size_t col = 0; col < sheet->lastCol(); ++col) {
+                    std::string cell_data = wideToUtf8(sheet->readStr(row, col));
+                    if (col > 0)
+                        insert_query << ", ";
+                    insert_query << "'" << cell_data << "'";
+                }
+                insert_query << ");";
+                database_->exec(insert_query.str().c_str());
+            }
+        }
+        book->release();
+        closeDatabase();
+    }
+    catch (const std::exception& e) {
+        throw std::exception(e.what());
+    }
+
+    return true;
 }
 
 bool hinge_framework::DatabaseHandler::exportToExcel(const char*& output_path, const uint16_t color_value_header, const uint16_t color_value_content_layer, const uint16_t color_value_content_base) {
@@ -144,8 +229,8 @@ bool hinge_framework::DatabaseHandler::exportToExcel(const char*& output_path, c
 
 bool hinge_framework::DatabaseHandler::openDatabase() {
     try {
-        database_ = new SQLite::Database(db_file_path_.c_str(), SQLite::OPEN_READWRITE | SQLite::OPEN_CREATE);
-        database_->key(key_.c_str()); // Set encryption key
+        database_ = new SQLite::Database(this->db_file_path_.c_str(), SQLite::OPEN_READWRITE | SQLite::OPEN_CREATE);
+        database_->key(this->key_.c_str()); // Set encryption key
         return true;
     }
     catch (std::exception& e) {
@@ -165,6 +250,12 @@ std::wstring hinge_framework::DatabaseHandler::utf8ToWide(const std::string& utf
     std::wstring wide_str;
     utf8::utf8to16(utf8_str.begin(), utf8_str.end(), std::back_inserter(wide_str));
     return wide_str;
+}
+
+std::string hinge_framework::DatabaseHandler::wideToUtf8(const std::wstring& wide_str) {
+    std::string utf8_str;
+    utf8::utf16to8(wide_str.begin(), wide_str.end(), std::back_inserter(utf8_str));
+    return utf8_str;
 }
 
 // Function to get column names and data types from database
@@ -196,5 +287,66 @@ void hinge_framework::DatabaseHandler::setRowHeightAndColumnWidth(libxl::Sheet* 
             }
         }
         sheet->setCol(i, i, (width + 8 < 20) ? 20 : width + 8);
+    }
+}
+
+bool hinge_framework::DatabaseHandler::createTable(const std::string& table_name, const std::vector<ColumnInfo>& columns) {
+    std::string query = "CREATE TABLE IF NOT EXISTS " + table_name + " (";
+    for (size_t i = 0; i < columns.size(); ++i) {
+        query += columns[i].name + " " + columns[i].type;
+        if (i != columns.size() - 1) {
+            query += ", ";
+        }
+    }
+    query += ");";
+
+    try {
+        SQLite::Statement create_table(*database_, query);
+        create_table.exec();
+        return true;
+    }
+    catch (std::exception& e) {
+        std::string error_message = "Exception caught in createTable(): ";
+        error_message += e.what();
+        throw std::runtime_error(error_message);
+        return false;
+    }
+}
+
+void hinge_framework::DatabaseHandler::insertData(const std::string& table_name, const std::vector<ColumnInfo>& columns, libxl::Sheet* sheet) {
+    std::wstring query = L"INSERT INTO " + utf8ToWide(table_name) + L" (";
+    for (size_t i = 0; i < columns.size(); ++i) {
+        query += utf8ToWide(columns[i].name);
+        if (i != columns.size() - 1) {
+            query += L", ";
+        }
+    }
+    query += L") VALUES (";
+
+    for (int i = 1; i <= sheet->lastRow(); ++i) {
+        std::wstring row_values;
+        for (size_t j = 0; j < columns.size(); ++j) {
+            std::wstring cell_value;
+            if (j < sheet->lastCol()) {
+                cell_value = sheet->readStr(i, j);
+            }
+            else {
+                cell_value = L""; // If column index exceeds the number of columns in the sheet, insert empty string
+            }
+            row_values += L"'" + cell_value + L"'";
+            if (j != columns.size() - 1) {
+                row_values += L", ";
+            }
+        }
+        std::wstring insert_query = query + row_values + L");";
+        try {
+            SQLite::Statement insert_data(*database_, wideToUtf8(insert_query));
+            insert_data.exec();
+        }
+        catch (std::exception& e) {
+            std::string error_message = "Exception caught in insertData(): ";
+            error_message += e.what();
+            throw std::runtime_error(error_message);
+        }
     }
 }

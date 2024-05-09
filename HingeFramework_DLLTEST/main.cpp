@@ -100,7 +100,8 @@ public:
 
     std::vector<Student> getAllStudents() {
         std::vector<Student> allStudents;
-        SQLite::Statement query(*db, "SELECT * FROM students");
+        //SQLite::Statement query(*db, "SELECT * FROM students");
+        SQLite::Statement query(*db, "SELECT * FROM TESTING_TABLE");
         while (query.executeStep()) {
             int id = query.getColumn(0).getInt();
             std::string name = query.getColumn(1).getString();
@@ -110,8 +111,12 @@ public:
         return allStudents;
     }
 
-    bool exportToExcel(const char* outputPath) {
-        return handler->exportToExcel(outputPath, 96, 212);
+    bool exportToExcel(const char*& output_path) {
+        return handler->exportToExcel(output_path, 96, 212);
+    }
+
+    bool importFromExcel(const char*& input_path) {
+        return handler->importFromExcel(input_path);
     }
 };
 
@@ -122,8 +127,9 @@ void showMainMenu() {
     std::cout << "3. Update Student" << std::endl;
     std::cout << "4. Search Student" << std::endl;
     std::cout << "5. Show All Students" << std::endl;
-    std::cout << "6. Export to Excel" << std::endl;
-    std::cout << "7. Exit" << std::endl;
+    std::cout << "6. Import from Excel" << std::endl;
+    std::cout << "7. Export to Excel" << std::endl;
+    std::cout << "8. Exit" << std::endl;
 }
 
 std::string centerAlign(const std::string& text, uint16_t width) {
@@ -144,6 +150,9 @@ int32_t task0() {
     const char* const KEY_FILE_PATH = "./assets-test/data/keys.ent";
     const char* const DB_FILE_PATH = "./assets-test/data/scores.dat";
     const char* const KEY_ID0 = "2898db5e-c31b-4837-946d-d4fc3f02ef09";
+
+    const char* const INPUT_PATH = "./assets-test/input/scores.xlsx";
+    const char* const OUTPUT_PATH = "./assets-test/output/scores.xlsx";
 
     hinge_framework::Aes256Cipher aes256;
     hinge_framework::RsaCipher rsa;
@@ -250,10 +259,28 @@ int32_t task0() {
             break;
         }
         case 6: {
+            // Import database form Excel file
+            const char* input_path = INPUT_PATH;
+            try {
+                if (db.importFromExcel(input_path)) {
+                    std::cout << "Database imported successfully from: " << input_path << std::endl;
+                }
+                else {
+                    std::cerr << "Error exporting database." << std::endl;
+                }
+            }
+            catch (const std::exception& e) {
+                std::cerr << "An exception occurred while importing database: " << e.what() << std::endl;
+            }
+            system("pause");
+            system("cls");
+            break;
+        }
+        case 7: {
             // Export database to Excel file
-            const char* outputPath = "./assets-test/output/scores.xlsx";
-            if (db.exportToExcel(outputPath)) {
-                std::cout << "Database exported successfully to: " << outputPath << std::endl;
+            const char* output_path = OUTPUT_PATH;
+            if (db.exportToExcel(output_path)) {
+                std::cout << "Database exported successfully to: " << output_path << std::endl;
             }
             else {
                 std::cerr << "Error exporting database." << std::endl;
@@ -262,7 +289,7 @@ int32_t task0() {
             system("cls");
             break;
         }
-        case 7:
+        case 8:
             std::cout << "Exiting program..." << std::endl;
             break;
         default:
@@ -270,7 +297,7 @@ int32_t task0() {
             system("pause");
             system("cls");
         }
-    } while (choice != 7);
+    } while (choice != 8);
 
     return 0;
 }
