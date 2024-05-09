@@ -102,12 +102,14 @@ public:
         std::vector<Student> allStudents;
         SQLite::Statement query(*db, "SELECT * FROM students");
         //SQLite::Statement query(*db, "SELECT * FROM TESTING_TABLE");
+
         while (query.executeStep()) {
             int id = query.getColumn(0).getInt();
             std::string name = query.getColumn(1).getString();
             double score = query.getColumn(2).getDouble();
             allStudents.push_back(Student(id, name, score));
         }
+
         return allStudents;
     }
 
@@ -246,14 +248,37 @@ int32_t task0() {
         }
         case 5: {
             const uint16_t LINE_LENGTH = 48;
+
             std::vector<Student> allStudents = db.getAllStudents();
-            std::cout << std::setfill('-') << std::setw(LINE_LENGTH) << "" << std::setfill(' ') << std::endl;
-            std::cout << "| " << centerAlign("ID", 8) << " | " << centerAlign("Name", 24) << " | " << centerAlign("Score", 6) << " |" << std::endl;
-            std::cout << std::setfill('-') << std::setw(LINE_LENGTH) << "" << std::setfill(' ') << std::endl;
+
+            std::ostringstream output;
+
+            output << std::setfill('-') << std::setw(LINE_LENGTH) << "" << std::setfill(' ') << std::endl;
+            output << "| " << centerAlign("ID", 8) << " | " << centerAlign("Name", 24) << " | " << centerAlign("Score", 6) << " |" << std::endl;
+            output << std::setfill('-') << std::setw(LINE_LENGTH) << "" << std::setfill(' ') << std::endl;
+
+            //// 记录开始时间点
+            //auto start = std::chrono::high_resolution_clock::now();
+
             for (const auto& student : allStudents) {
-                std::cout << "| " << std::right << std::setw(8) << student.getId() << " | " << std::left << std::setw(24) << student.getName() << " | " << std::right << std::setw(6) << student.getScore() << " |" << std::endl;
+                output << "| " << std::right << std::setw(8) << student.getId() << " | "
+                    << std::left << std::setw(24) << student.getName() << " | "
+                    << std::right << std::setw(6) << student.getScore() << " |" << std::endl;
             }
-            std::cout << std::setfill('-') << std::setw(LINE_LENGTH) << "" << std::setfill(' ') << std::endl;
+
+            output << std::setfill('-') << std::setw(LINE_LENGTH) << "" << std::setfill(' ') << std::endl;
+
+            //// 记录结束时间点
+            //auto end = std::chrono::high_resolution_clock::now();
+
+            std::cout << output.str();
+
+            //// 计算执行时间
+            //auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+
+            //// 输出执行时间
+            //std::cout << "Execution time: " << duration.count() << " ms" << std::endl;
+
             system("pause");
             system("cls");
             break;
