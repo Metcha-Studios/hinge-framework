@@ -211,6 +211,7 @@ bool hinge_framework::DatabaseHandler::exportToExcel(const char*& output_path, c
             closeDatabase();
             return false;
         }
+        sheet->setDisplayGridlines(false);
 
         // Get column names and data types
         std::vector<hinge_framework::ColumnInfo> column_info = getColumnInfo(table_name);
