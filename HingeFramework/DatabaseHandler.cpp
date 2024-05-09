@@ -73,25 +73,58 @@ bool hinge_framework::DatabaseHandler::importFromExcel(const char*& input_path) 
             std::string clear_table_query = "DELETE FROM " + table_name + ";";
             database_->exec(clear_table_query);
 
+            // Check if the table already exists
+            bool table_exists = database_->tableExists(table_name);
+
             // Get column names from the first row
             std::vector<std::string> column_names;
             for (size_t col = 0; col < sheet->lastCol(); ++col) {
                 std::string column_name = wideToUtf8(sheet->readStr(0, col));
+                // Check if the column name exists in the target table
+                if (table_exists && !columnExists(table_name, column_name))
+                    continue;
                 column_names.push_back(column_name);
+            }
+
+            if (!table_exists) {
+                // Create the table if it doesn't exist
+                std::stringstream create_table_query;
+                create_table_query << "CREATE TABLE " << table_name << " (";
+                for (size_t col = 0; col < column_names.size(); ++col) {
+                    if (col > 0)
+                        create_table_query << ", ";
+                    create_table_query << column_names[col] << " TEXT";
+                }
+                create_table_query << ");";
+                database_->exec(create_table_query.str());
             }
 
             // Read data from the sheet and insert into the corresponding database table
             for (size_t row = 1; row < sheet->lastRow(); ++row) {
                 std::stringstream insert_query;
-                insert_query << "INSERT INTO " << table_name << " VALUES (";
-                for (size_t col = 0; col < sheet->lastCol(); ++col) {
-                    std::string cell_data = wideToUtf8(sheet->readStr(row, col));
+                insert_query << "INSERT INTO " << table_name << " (";
+                for (size_t col = 0; col < column_names.size(); ++col) {
                     if (col > 0)
                         insert_query << ", ";
-                    insert_query << "'" << cell_data << "'";
+                    insert_query << column_names[col];
+                }
+                insert_query << ") VALUES (";
+                for (size_t col = 0; col < column_names.size(); ++col) {
+                    std::string cell_data;
+                    if (col < sheet->lastCol()) {
+                        cell_data = wideToUtf8(sheet->readStr(row, col));
+                    }
+                    if (col > 0)
+                        insert_query << ", ";
+                    if (cell_data.empty()) {
+                        insert_query << "NULL";
+                    }
+                    else {
+                        insert_query << "'" << cell_data << "'";
+                    }
                 }
                 insert_query << ");";
-                database_->exec(insert_query.str().c_str());
+                database_->exec(insert_query.str());
             }
         }
         book->release();
@@ -349,4 +382,20 @@ void hinge_framework::DatabaseHandler::insertData(const std::string& table_name,
             throw std::runtime_error(error_message);
         }
     }
+}
+
+// Function to check if a column exists in a table
+bool hinge_framework::DatabaseHandler::columnExists(const std::string& table_name, const std::string& column_name) {
+    std::string query = "PRAGMA table_info(" + table_name + ");";
+
+    SQLite::Statement query_result(*this->database_, query);
+
+    while (query_result.executeStep()) {
+        std::string existing_column_name = query_result.getColumn(1).getString();
+        if (existing_column_name == column_name) {
+            return true;
+        }
+    }
+
+    return false;
 }

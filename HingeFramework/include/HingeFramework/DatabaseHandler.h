@@ -49,6 +49,7 @@ namespace hinge_framework {
         void setRowHeightAndColumnWidth(libxl::Sheet* sheet, uint16_t row_height, const std::vector<hinge_framework::ColumnInfo>& column_info);
         bool createTable(const std::string& table_name, const std::vector<ColumnInfo>& columns);
         void insertData(const std::string& table_name, const std::vector<ColumnInfo>& columns, libxl::Sheet* sheet);
+        bool columnExists(const std::string& table_name, const std::string& column_name);
     };
 }
 
