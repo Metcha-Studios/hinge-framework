@@ -100,8 +100,8 @@ public:
 
     std::vector<Student> getAllStudents() {
         std::vector<Student> allStudents;
-        //SQLite::Statement query(*db, "SELECT * FROM students");
-        SQLite::Statement query(*db, "SELECT * FROM TESTING_TABLE");
+        SQLite::Statement query(*db, "SELECT * FROM students");
+        //SQLite::Statement query(*db, "SELECT * FROM TESTING_TABLE");
         while (query.executeStep()) {
             int id = query.getColumn(0).getInt();
             std::string name = query.getColumn(1).getString();
