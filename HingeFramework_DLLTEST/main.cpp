@@ -201,7 +201,23 @@ int32_t task0() {
             std::getline(std::cin, name);
             std::cout << "Enter student score: ";
             std::cin >> score;
+
+            // 记录开始时间点
+            auto start = std::chrono::high_resolution_clock::now();
+
             db.insertStudent(Student(id, name, score));
+
+            // 记录结束时间点
+            auto end = std::chrono::high_resolution_clock::now();
+
+            // 计算执行时间
+            auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+
+            std::cout << "\nThe student info has been added successfully!\n" << std::endl;
+
+            // 输出执行时间
+            std::cout << "\nExecution time: " << duration.count() << " ms\n" << std::endl;
+
             system("pause");
             system("cls");
             break;
@@ -210,7 +226,23 @@ int32_t task0() {
             int id;
             std::cout << "Enter student ID to delete: ";
             std::cin >> id;
+
+            // 记录开始时间点
+            auto start = std::chrono::high_resolution_clock::now();
+
             db.deleteStudent(id);
+
+            // 记录结束时间点
+            auto end = std::chrono::high_resolution_clock::now();
+
+            // 计算执行时间
+            auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+
+            std::cout << "\nThe student info has been deleted successfully!\n" << std::endl;
+
+            // 输出执行时间
+            std::cout << "\nExecution time: " << duration.count() << " ms\n" << std::endl;
+
             system("pause");
             system("cls");
             break;
@@ -226,7 +258,23 @@ int32_t task0() {
             std::getline(std::cin, name);
             std::cout << "Enter new student score: ";
             std::cin >> score;
+
+            // 记录开始时间点
+            auto start = std::chrono::high_resolution_clock::now();
+
             db.updateStudent(Student(id, name, score));
+
+            // 记录结束时间点
+            auto end = std::chrono::high_resolution_clock::now();
+
+            // 计算执行时间
+            auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+
+            std::cout << "\nThe student info has been updated successfully!\n" << std::endl;
+
+            // 输出执行时间
+            std::cout << "\nExecution time: " << duration.count() << " ms\n" << std::endl;
+
             system("pause");
             system("cls");
             break;
@@ -235,6 +283,10 @@ int32_t task0() {
             int id;
             std::cout << "Enter student ID to search: ";
             std::cin >> id;
+
+            // 记录开始时间点
+            auto start = std::chrono::high_resolution_clock::now();
+
             try {
                 Student student = db.getStudent(id);
                 std::cout << "Student found: ID = " << student.getId() << ", Name = " << student.getName() << ", Score = " << student.getScore() << std::endl;
@@ -242,11 +294,24 @@ int32_t task0() {
             catch (const std::runtime_error& e) {
                 std::cerr << e.what() << std::endl;
             }
+
+            // 记录结束时间点
+            auto end = std::chrono::high_resolution_clock::now();
+
+            // 计算执行时间
+            auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+
+            // 输出执行时间
+            std::cout << "\nExecution time: " << duration.count() << " ms\n" << std::endl;
+
             system("pause");
             system("cls");
             break;
         }
         case 5: {
+            // 记录开始时间点
+            auto start = std::chrono::high_resolution_clock::now();
+
             const uint16_t LINE_LENGTH = 48;
 
             std::vector<Student> allStudents = db.getAllStudents();
@@ -257,9 +322,6 @@ int32_t task0() {
             output << "| " << centerAlign("ID", 8) << " | " << centerAlign("Name", 24) << " | " << centerAlign("Score", 6) << " |" << std::endl;
             output << std::setfill('-') << std::setw(LINE_LENGTH) << "" << std::setfill(' ') << std::endl;
 
-            //// 记录开始时间点
-            //auto start = std::chrono::high_resolution_clock::now();
-
             for (const auto& student : allStudents) {
                 output << "| " << std::right << std::setw(8) << student.getId() << " | "
                     << std::left << std::setw(24) << student.getName() << " | "
@@ -268,48 +330,93 @@ int32_t task0() {
 
             output << std::setfill('-') << std::setw(LINE_LENGTH) << "" << std::setfill(' ') << std::endl;
 
-            //// 记录结束时间点
-            //auto end = std::chrono::high_resolution_clock::now();
+            // 记录结束时间点
+            auto end = std::chrono::high_resolution_clock::now();
 
-            std::cout << output.str();
+            // 计算执行时间
+            auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
 
-            //// 计算执行时间
-            //auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+            std::cout << output.str() << std::endl;
 
-            //// 输出执行时间
-            //std::cout << "Execution time: " << duration.count() << " ms" << std::endl;
+            // 输出执行时间
+            std::cout << "Execution time: " << duration.count() << " ms" << std::endl;
 
             system("pause");
             system("cls");
             break;
         }
         case 6: {
+            // 记录开始时间点
+            auto start = std::chrono::high_resolution_clock::now();
+
             // Import database form Excel file
             const char* input_path = INPUT_PATH;
             try {
                 if (db.importFromExcel(input_path)) {
+                    // 记录结束时间点
+                    auto end = std::chrono::high_resolution_clock::now();
+
+                    // 计算执行时间
+                    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+
                     std::cout << "Database imported successfully from: " << input_path << std::endl;
+
+                    // 输出执行时间
+                    std::cout << "\nExecution time: " << duration.count() << " ms\n" << std::endl;
                 }
                 else {
+                    // 记录结束时间点
+                    auto end = std::chrono::high_resolution_clock::now();
+
+                    // 计算执行时间
+                    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+
                     std::cerr << "Error exporting database." << std::endl;
+
+                    // 输出执行时间
+                    std::cout << "\nExecution time: " << duration.count() << " ms\n" << std::endl;
                 }
             }
             catch (const std::exception& e) {
                 std::cerr << "An exception occurred while importing database: " << e.what() << std::endl;
             }
+
             system("pause");
             system("cls");
             break;
         }
         case 7: {
+
+            // 记录开始时间点
+            auto start = std::chrono::high_resolution_clock::now();
+
             // Export database to Excel file
             const char* output_path = OUTPUT_PATH;
             if (db.exportToExcel(output_path)) {
+                // 记录结束时间点
+                auto end = std::chrono::high_resolution_clock::now();
+
+                // 计算执行时间
+                auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+
                 std::cout << "Database exported successfully to: " << output_path << std::endl;
+
+                // 输出执行时间
+                std::cout << "\nExecution time: " << duration.count() << " ms\n" << std::endl;
             }
             else {
+                // 记录结束时间点
+                auto end = std::chrono::high_resolution_clock::now();
+
+                // 计算执行时间
+                auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+
                 std::cerr << "Error exporting database." << std::endl;
+
+                // 输出执行时间
+                std::cout << "\nExecution time: " << duration.count() << " ms\n" << std::endl;
             }
+
             system("pause");
             system("cls");
             break;
