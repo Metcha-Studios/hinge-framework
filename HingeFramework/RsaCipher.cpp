@@ -12,7 +12,7 @@
 #include <openssl/err.h>
 #include <nlohmann/json.hpp>
 
-#include "Cipher.h"
+#include "include/HingeFramework/Cipher.h"
 #include "include/HingeFramework/uuidV4.h"
 
 namespace hinge_framework {

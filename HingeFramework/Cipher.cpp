@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "Cipher.h"
+#include "include/HingeFramework/Cipher.h"
 
 #include <string>
 #include <fstream>
