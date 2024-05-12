@@ -8,7 +8,7 @@
 #define HINGE_API __declspec(dllexport)
 #else
 #define HINGE_API __declspec(dllimport)
-#endif
+#endif // HINGE_EXPORTS
 
 #endif // HINGE_API
 

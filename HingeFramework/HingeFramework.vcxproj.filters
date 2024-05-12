@@ -24,9 +24,6 @@
     <ClInclude Include="pch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Cipher.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="include\HingeFramework\Aes256Cipher.h">
       <Filter>Header Files\Exports</Filter>
     </ClInclude>
@@ -43,6 +40,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\HingeFramework\DatabaseHandler.h">
+      <Filter>Header Files\Exports</Filter>
+    </ClInclude>
+    <ClInclude Include="include\HingeFramework\Cipher.h">
       <Filter>Header Files\Exports</Filter>
     </ClInclude>
   </ItemGroup>

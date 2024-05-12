@@ -439,6 +439,10 @@ int32_t task1() {
     const char* const DB_FILE_PATH = "./assets-test/data/scores.dat";
     const char* const KEY_ID0 = "2898db5e-c31b-4837-946d-d4fc3f02ef09";
 
+    const char* const ORIGIN_FILE_PATH = "./assets-test/origin/";
+    const char* const ENCRYPTED_FILE_PATH = "./assets-test/encrypted/";
+    const char* const DECRYPTED_FILE_PATH = "./assets-test/decrypted/";
+
     hinge_framework::Aes256Cipher aes256;
     hinge_framework::RsaCipher rsa;
     hinge_framework::Key aes256_key0;
@@ -463,17 +467,8 @@ int32_t task1() {
     std::cout << "Key ID: " << aes256_key0.id_ << "\n"
         << "Key: " << aes256_key0.key_ << "\n\n" << std::endl;
 
-    // Initialize DatabaseHandler with database file path and encryption key
-    hinge_framework::DatabaseHandler handler(DB_FILE_PATH, aes256_key0.key_);
-
-    // Export database to Excel file
-    const char* outputPath = "./assets-test/output/scores.xlsx";
-    if (handler.exportToExcel(outputPath, 96, 212)) {
-        std::cout << "Database exported successfully to: " << outputPath << std::endl;
-    }
-    else {
-        std::cerr << "Error exporting database." << std::endl;
-    }
+    aes256.encryptDirectory(aes256_key0.key_, ORIGIN_FILE_PATH, ENCRYPTED_FILE_PATH);
+    aes256.decryptDirectory(aes256_key0.key_, ENCRYPTED_FILE_PATH, DECRYPTED_FILE_PATH);
 
     return 0;
 }
