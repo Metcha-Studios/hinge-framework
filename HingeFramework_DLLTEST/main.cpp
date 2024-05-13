@@ -181,8 +181,8 @@ int32_t task0() {
     std::cout << "Key ID: " << aes256_key0.id_ << "\n"
         << "Key: " << aes256_key0.key_ << "\n\n" << std::endl;
 
-    std::cout << "Key ID: " << hinge_framework::sha256(aes256_key0.id_.c_str()) << "\n"
-        << "Key: " << hinge_framework::sha256(aes256_key0.key_.c_str()) << "\n\n" << std::endl;
+    std::cout << "Key ID: " << hinge_framework::hashPlaintext(aes256_key0.id_.c_str()) << "\n"
+        << "Key: " << hinge_framework::hashPlaintext(aes256_key0.key_.c_str()) << "\n\n" << std::endl;
 
     Database db(DB_FILE_PATH, aes256_key0.key_);
     db.createTable();
@@ -477,8 +477,32 @@ int32_t task1() {
     return 0;
 }
 
+int32_t task2() {
+    std::string input;
+
+    while (true) {
+        std::cout << "Enter your input (type 'e' to quit): \n";
+        std::getline(std::cin, input);
+
+        if (input == "e") {
+            std::cout << "\nExiting the program...\n" << std::endl;
+            break;
+        }
+
+        const char* hashed_value = hinge_framework::hashPlaintext(input.c_str());
+        std::cout << "\nHashed value of '" << input << "': \n" 
+            << hashed_value << "\n" 
+            << std::endl;
+
+        system("pause");
+        system("cls");
+    }
+
+    return 0;
+}
+
 int32_t main(int32_t argc, char* argv[]) {
-    int32_t main_return = task0();
+    const int32_t main_return = task2();
 
     system("pause");
     return main_return;

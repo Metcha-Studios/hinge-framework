@@ -15,7 +15,8 @@
 //#include <string>
 
 namespace hinge_framework {
-    extern "C" HINGE_API const char* sha256(const char* str);
+    extern "C" HINGE_API const char* hashPlaintext(const char* plaintext);
+    extern "C" HINGE_API bool compareHash(const char* plaintext, const char* hashValue);
 }
 
 #endif // HASH_H
