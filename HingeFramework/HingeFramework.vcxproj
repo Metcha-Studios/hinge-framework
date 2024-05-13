@@ -159,20 +159,22 @@
   <ItemGroup>
     <ClInclude Include="framework.h" />
     <ClInclude Include="include\HingeFramework\Aes256Cipher.h" />
-    <ClInclude Include="include\HingeFramework\Base64Wrapper.h" />
+    <ClInclude Include="include\HingeFramework\Base64.h" />
     <ClInclude Include="include\HingeFramework\Cipher.h" />
     <ClInclude Include="include\HingeFramework\DatabaseHandler.h" />
+    <ClInclude Include="include\HingeFramework\Hash.h" />
     <ClInclude Include="include\HingeFramework\RsaCipher.h" />
-    <ClInclude Include="include\HingeFramework\uuidV4.h" />
+    <ClInclude Include="include\HingeFramework\Uuid.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Aes256Cipher.cpp" />
-    <ClCompile Include="Base64Wrapper.cpp" />
+    <ClCompile Include="Base64.cpp" />
     <ClCompile Include="Cipher.cpp" />
     <ClCompile Include="DatabaseHandler.cpp" />
     <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="Hash.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
@@ -180,7 +182,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="RsaCipher.cpp" />
-    <ClCompile Include="uuidV4.cpp" />
+    <ClCompile Include="Uuid.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="HingeFramework.rc" />

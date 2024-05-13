@@ -1,6 +1,6 @@
 #pragma once
-#ifndef BASE64_WRAPPER_H
-#define BASE64_WRAPPER_H
+#ifndef BASE64_H
+#define BASE64_H
 
 #ifndef HINGE_API
 
@@ -19,4 +19,4 @@ namespace hinge_framework {
     extern "C" HINGE_API const char* decodeBase64(const std::string& base64_text);
 }
 
-#endif // BASE64_WRAPPER_H
+#endif // BASE64_H

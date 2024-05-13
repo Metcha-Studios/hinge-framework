@@ -27,13 +27,7 @@
     <ClInclude Include="include\HingeFramework\Aes256Cipher.h">
       <Filter>Header Files\Exports</Filter>
     </ClInclude>
-    <ClInclude Include="include\HingeFramework\Base64Wrapper.h">
-      <Filter>Header Files\Exports</Filter>
-    </ClInclude>
     <ClInclude Include="include\HingeFramework\RsaCipher.h">
-      <Filter>Header Files\Exports</Filter>
-    </ClInclude>
-    <ClInclude Include="include\HingeFramework\uuidV4.h">
       <Filter>Header Files\Exports</Filter>
     </ClInclude>
     <ClInclude Include="resource.h">
@@ -43,6 +37,15 @@
       <Filter>Header Files\Exports</Filter>
     </ClInclude>
     <ClInclude Include="include\HingeFramework\Cipher.h">
+      <Filter>Header Files\Exports</Filter>
+    </ClInclude>
+    <ClInclude Include="include\HingeFramework\Base64.h">
+      <Filter>Header Files\Exports</Filter>
+    </ClInclude>
+    <ClInclude Include="include\HingeFramework\Hash.h">
+      <Filter>Header Files\Exports</Filter>
+    </ClInclude>
+    <ClInclude Include="include\HingeFramework\Uuid.h">
       <Filter>Header Files\Exports</Filter>
     </ClInclude>
   </ItemGroup>
@@ -56,19 +59,22 @@
     <ClCompile Include="Cipher.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="uuidV4.cpp">
+    <ClCompile Include="Uuid.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="RsaCipher.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Base64Wrapper.cpp">
+    <ClCompile Include="Base64.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Aes256Cipher.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="DatabaseHandler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Hash.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

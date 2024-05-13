@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "include/HingeFramework/Base64Wrapper.h"
+#include "include/HingeFramework/Base64.h"
 
 #include <string>
 #include <vector>

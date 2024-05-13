@@ -6,6 +6,7 @@
 #include <sstream>
 #include <vector>
 #include <SQLiteCpp/SQLiteCpp.h>
+#include <HingeFramework/Hash.h>
 #include <HingeFramework/RsaCipher.h>
 #include <HingeFramework/Aes256Cipher.h>
 #include <HingeFramework/DatabaseHandler.h>
@@ -179,6 +180,9 @@ int32_t task0() {
 
     std::cout << "Key ID: " << aes256_key0.id_ << "\n"
         << "Key: " << aes256_key0.key_ << "\n\n" << std::endl;
+
+    std::cout << "Key ID: " << hinge_framework::sha256(aes256_key0.id_.c_str()) << "\n"
+        << "Key: " << hinge_framework::sha256(aes256_key0.key_.c_str()) << "\n\n" << std::endl;
 
     Database db(DB_FILE_PATH, aes256_key0.key_);
     db.createTable();

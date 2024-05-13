@@ -1,6 +1,6 @@
 #pragma once
-#ifndef UUIDV4_H
-#define UUIDV4_H
+#ifndef HASH_H
+#define HASH_H
 
 #ifndef HINGE_API
 
@@ -12,10 +12,10 @@
 
 #endif // HINGE_API
 
-#include <string>
+//#include <string>
 
 namespace hinge_framework {
-    extern "C" HINGE_API const char* uuidV4Generator();
+    extern "C" HINGE_API const char* sha256(const char* str);
 }
 
-#endif // UUIDV4_H
+#endif // HASH_H
