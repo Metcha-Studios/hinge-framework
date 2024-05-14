@@ -181,8 +181,8 @@ int32_t task0() {
     std::cout << "Key ID: " << aes256_key0.id_ << "\n"
         << "Key: " << aes256_key0.key_ << "\n\n" << std::endl;
 
-    std::cout << "Key ID: " << hinge_framework::hashPlaintext(aes256_key0.id_.c_str()) << "\n"
-        << "Key: " << hinge_framework::hashPlaintext(aes256_key0.key_.c_str()) << "\n\n" << std::endl;
+    std::cout << "Key ID: " << hinge_framework::sha3_256(aes256_key0.id_.c_str()).hash << "\n"
+        << "Key: " << hinge_framework::sha3_256(aes256_key0.key_.c_str()).hash << "\n\n" << std::endl;
 
     Database db(DB_FILE_PATH, aes256_key0.key_);
     db.createTable();
@@ -489,9 +489,11 @@ int32_t task2() {
             break;
         }
 
-        const char* hashed_value = hinge_framework::hashPlaintext(input.c_str());
+        const hinge_framework::Hash hashed_value = hinge_framework::sha3_256(input.c_str());
         std::cout << "\nHashed value of '" << input << "': \n" 
-            << hashed_value << "\n" 
+            << hashed_value.hash << "\n"
+            << "\nThe salt of this hash value is: \n"
+            << hashed_value.salt << "\n"
             << std::endl;
 
         system("pause");

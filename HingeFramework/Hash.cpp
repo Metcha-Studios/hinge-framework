@@ -1,62 +1,101 @@
 #include "pch.h"
 #include "include/HingeFramework/Hash.h"
 
-#include <iomanip>
+#include <cstring>
 #include <string>
-#include <sstream>
-#include <bcrypt.h>
+#include <openssl/evp.h>
+#include <openssl/rand.h>
+
+#include "include/HingeFramework/Base64.h"
 
 namespace hinge_framework {
-    const char* hashPlaintext(const char* plaintext) {
-        BCRYPT_ALG_HANDLE h_alg = NULL;
-        BCRYPT_HASH_HANDLE h_hash = NULL;
-        DWORD cb_data = 0, cb_hash = 0;
-        PBYTE pb_hash = NULL;
-        char* hex_hash = nullptr;
+    // Fixed length for salt
+    const uint16_t SALT_LENGTH = 16; // for example, change this to the desired length
 
-        // Open an algorithm handle
-        NTSTATUS status = BCryptOpenAlgorithmProvider(&h_alg, BCRYPT_SHA256_ALGORITHM, NULL, 0);
-        if (status == 0) { // Check for success (0 means success)
-            // Calculate the size of the buffer to hold the hash
-            status = BCryptGetProperty(h_alg, BCRYPT_HASH_LENGTH, (PBYTE)&cb_hash, sizeof(DWORD), &cb_data, 0);
-            if (status == 0) {
-                pb_hash = (PBYTE)malloc(cb_hash);
-                if (pb_hash != NULL) {
-                    // Create a hash object
-                    status = BCryptCreateHash(h_alg, &h_hash, NULL, 0, NULL, 0, 0);
-                    if (status == 0) {
-                        // Hash the input buffer
-                        status = BCryptHashData(h_hash, (PBYTE)plaintext, (ULONG)strlen(plaintext), 0);
-                        if (status == 0) {
-                            // Close the hash object
-                            status = BCryptFinishHash(h_hash, pb_hash, cb_hash, 0);
-                            if (status == 0) {
-                                // Convert the hash to hexadecimal string
-                                std::ostringstream oss;
-                                oss << std::hex << std::setfill('0');
-                                for (DWORD i = 0; i < cb_hash; ++i) {
-                                    oss << std::setw(2) << static_cast<int>(pb_hash[i]);
-                                }
-                                std::string temp_hex_hash = oss.str();
-                                hex_hash = _strdup(temp_hex_hash.c_str()); // Allocate memory and copy string
-                            }
-                        }
-                        BCryptDestroyHash(h_hash);
-                    }
-                }
-                free(pb_hash);
-            }
-            BCryptCloseAlgorithmProvider(h_alg, 0);
-        }
-        return hex_hash;
+    // Generate a random salt
+    void generateRandomSalt(char* salt) {
+        RAND_bytes((unsigned char*)salt, SALT_LENGTH);
     }
 
-    bool compareHash(const char* plaintext, const char* hash_value) {
-        const char* computed_hash = hashPlaintext(plaintext);
-        if (computed_hash == nullptr)
-            return false;
-        bool match = strcmp(computed_hash, hash_value) == 0;
-        free((void*)computed_hash); // Free allocated memory
-        return match;
+    Hash sha3_256(const char* str, const char* salt) {
+        Hash result;
+        EVP_MD_CTX* mdctx;
+        const EVP_MD* md;
+        unsigned char md_value[EVP_MAX_MD_SIZE];
+        uint32_t md_len;
+
+        mdctx = EVP_MD_CTX_new();
+        if (mdctx == NULL) {
+            // Handle error
+            strcpy_s(result.hash, "");
+            strcpy_s(result.salt, "");
+            return result;
+        }
+
+        md = EVP_sha3_256();
+
+        if (1 != EVP_DigestInit_ex(mdctx, md, NULL)) {
+            // Handle error
+            strcpy_s(result.hash, "");
+            strcpy_s(result.salt, "");
+            EVP_MD_CTX_free(mdctx);
+            return result;
+        }
+
+        // Add salt to the input
+        if (salt && strlen(salt) > 0) {
+            const char* original_salt = hinge_framework::decodeBase64(salt);
+            if (1 != EVP_DigestUpdate(mdctx, original_salt, SALT_LENGTH)) { // Use fixed length
+                // Handle error
+                strcpy_s(result.hash, "");
+                strcpy_s(result.salt, "");
+                EVP_MD_CTX_free(mdctx);
+                return result;
+            }
+        }
+        else {
+            // Generate random salt
+            char generated_salt[SALT_LENGTH];
+            generateRandomSalt(generated_salt);
+            if (1 != EVP_DigestUpdate(mdctx, generated_salt, SALT_LENGTH)) { // Use fixed length
+                // Handle error
+                strcpy_s(result.hash, "");
+                strcpy_s(result.salt, "");
+                EVP_MD_CTX_free(mdctx);
+                return result;
+            }
+            strcpy_s(result.salt, hinge_framework::encodeBase64(generated_salt));
+        }
+
+        // Add the original string
+        if (1 != EVP_DigestUpdate(mdctx, str, strlen(str))) {
+            // Handle error
+            strcpy_s(result.hash, "");
+            strcpy_s(result.salt, "");
+            EVP_MD_CTX_free(mdctx);
+            return result;
+        }
+
+        if (1 != EVP_DigestFinal_ex(mdctx, md_value, &md_len)) {
+            // Handle error
+            strcpy_s(result.hash, "");
+            strcpy_s(result.salt, "");
+            EVP_MD_CTX_free(mdctx);
+            return result;
+        }
+
+        EVP_MD_CTX_free(mdctx);
+
+        // Convert hash to hex
+        for (size_t i = 0; i < md_len; ++i) {
+            sprintf_s(&result.hash[i * 2], 3, "%02x", md_value[i]);
+        }
+
+        return result;
+    }
+
+    bool compareHashes(const char* plaintext, const Hash* hash) {
+        Hash computed_hash = sha3_256(plaintext, hash->salt);
+        return strcmp(computed_hash.hash, hash->hash) == 0;
     }
 }

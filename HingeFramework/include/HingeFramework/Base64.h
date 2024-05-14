@@ -12,11 +12,9 @@
 
 #endif // HINGE_API
 
-#include <string>
-
 namespace hinge_framework {
-    extern "C" HINGE_API const char* encodeBase64(const std::string& plain_text);
-    extern "C" HINGE_API const char* decodeBase64(const std::string& base64_text);
+    extern "C" HINGE_API const char* encodeBase64(const char* plain_text);
+    extern "C" HINGE_API const char* decodeBase64(const char* base64_text);
 }
 
 #endif // BASE64_H

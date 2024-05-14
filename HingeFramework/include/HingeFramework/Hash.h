@@ -12,11 +12,15 @@
 
 #endif // HINGE_API
 
-//#include <string>
+#include <openssl/evp.h>
 
 namespace hinge_framework {
-    extern "C" HINGE_API const char* hashPlaintext(const char* plaintext);
-    extern "C" HINGE_API bool compareHash(const char* plaintext, const char* hashValue);
+    extern "C" HINGE_API typedef struct {
+        char hash[EVP_MAX_MD_SIZE * 2 + 1]; // Hex representation of hash
+        char salt[EVP_MAX_MD_SIZE * 2 + 1]; // Hex representation of salt
+    } Hash;
+    extern "C" HINGE_API Hash sha3_256(const char* str, const char* salt = "");
+    extern "C" HINGE_API bool compareHashes(const char* plaintext, const Hash * hash);
 }
 
 #endif // HASH_H
