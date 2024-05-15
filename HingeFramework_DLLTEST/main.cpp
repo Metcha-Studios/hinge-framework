@@ -201,7 +201,7 @@ public:
     }
 
     bool exportToExcel(const char*& output_path) {
-        return handler->exportToExcel(output_path, 96, 212);
+        return handler->exportToExcel(output_path);
     }
 
     bool importFromExcel(const char*& input_path) {
@@ -594,7 +594,7 @@ static int32_t task0() {
                 // 计算执行时间
                 auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
 
-                std::cout << "Database exported successfully to: " << output_path << std::endl;
+                std::cout << "Database exported successfully to: \n" << output_path << "\n" << hash_output_path << std::endl;
 
                 // 输出执行时间
                 std::cout << "\nExecution time: " << duration.count() << " ms\n" << std::endl;

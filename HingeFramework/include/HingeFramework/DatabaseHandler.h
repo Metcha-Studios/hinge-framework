@@ -34,7 +34,7 @@ namespace hinge_framework {
         bool tableExists(const std::string& table_name);
         bool clearTable(const std::string& table_name);
         bool importFromExcel(const char*& input_path);
-        bool exportToExcel(const char*& output_path, const uint16_t color_value_header, const uint16_t color_value_content_layer, const uint16_t color_value_content_base = 255);
+        bool exportToExcel(const char*& output_path, const uint16_t color_value_header = 96, const uint16_t color_value_content_layer = 212, const uint16_t color_value_content_base = 255);
 
     private:
         std::string db_file_path_;
