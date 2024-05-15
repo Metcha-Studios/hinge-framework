@@ -5,11 +5,30 @@
 #include <string>
 #include <sstream>
 #include <vector>
+#include <conio.h>
 #include <SQLiteCpp/SQLiteCpp.h>
 #include <HingeFramework/Hash.h>
+#include <HingeFramework/Base64.h>
 #include <HingeFramework/RsaCipher.h>
 #include <HingeFramework/Aes256Cipher.h>
 #include <HingeFramework/DatabaseHandler.h>
+
+constexpr auto KEY_FILE_PATH = "./assets-test/data/keys.ent";
+constexpr auto HASH_FILE_PATH = "./assets-test/data/hash.dat";
+constexpr auto DB_FILE_PATH = "./assets-test/data/scores.dat";
+
+// 用户类
+class User {
+private:
+    std::string username;
+    std::string password;
+
+public:
+    User(const std::string& username, const std::string& password) : username(username), password(password) {}
+
+    std::string getUsername() const { return this->username; }
+    std::string getPassword() const { return this->password; }
+};
 
 // 定义学生类
 class Student {
@@ -31,12 +50,33 @@ class Database {
 private:
     SQLite::Database* db;
     hinge_framework::DatabaseHandler* handler;
+    hinge_framework::Key aes256_key_;
 
 public:
     Database(const std::string& dbName, const std::string& encryptionKey) {
         db = new SQLite::Database(dbName.c_str(), SQLite::OPEN_READWRITE | SQLite::OPEN_CREATE);
         db->key(encryptionKey.c_str());
         handler = new hinge_framework::DatabaseHandler(dbName, encryptionKey);
+
+        const char* const KEY_ID = "8187b205-29a1-48ff-b73c-d9ff65ea7d9b";
+
+        hinge_framework::Aes256Cipher aes256;
+        hinge_framework::RsaCipher rsa;
+        hinge_framework::Key aes256_key;
+
+        try {
+            if (!aes256.isKeyExists(KEY_ID, KEY_FILE_PATH)) {
+                aes256_key = aes256.generateKey(KEY_ID);
+                aes256.writeKeyToFile(aes256_key, KEY_FILE_PATH);
+            }
+        }
+        catch (const std::exception e) {
+            std::cerr << "Capture to exception: " << e.what() << std::endl;
+        }
+
+        aes256_key = aes256.readKeyFromFile(KEY_ID, KEY_FILE_PATH);
+
+        this->aes256_key_ = aes256_key;
     }
 
     ~Database() {
@@ -52,12 +92,58 @@ public:
 
     void createTable() {
         try {
+            db->exec("CREATE TABLE IF NOT EXISTS users (username TEXT PRIMARY KEY, password TEXT)");
             db->exec("CREATE TABLE IF NOT EXISTS students (id INTEGER PRIMARY KEY, name TEXT, score REAL)");
             db->exec("CREATE TABLE IF NOT EXISTS TESTING_TABLE (TESTING_HEADER0 INTEGER PRIMARY KEY, TESTING_HEADER1 TEXT, TESTING_HEADER2 REAL)");
         }
         catch (const std::exception e) {
             std::cerr << "捕获到异常: " << e.what() << std::endl;
         }
+    }
+
+    // 存储用户信息
+    bool storeUser(const User& user) {
+        try {
+            // Check if the user already exists
+            SQLite::Statement existQuery(*db, "SELECT COUNT(*) FROM users WHERE username = ?");
+            existQuery.bind(1, user.getUsername());
+            if (existQuery.executeStep()) {
+                int count = existQuery.getColumn(0).getInt();
+                if (count > 0) {
+                    std::cout << "User already exists." << std::endl;
+                    return false; // User already exists, return false
+                }
+            }
+
+            // User does not exist, insert the user
+            const hinge_framework::Hash hashedPassword = hinge_framework::sha3_256(user.getPassword().c_str());
+            SQLite::Statement query(*db, "INSERT INTO users (username, password) VALUES (?, ?)");
+            query.bind(1, user.getUsername());
+            query.bind(2, hashedPassword.hash);
+            query.exec();
+
+            // Store the hashed password
+            hinge_framework::storeHash(hashedPassword, HASH_FILE_PATH, this->aes256_key_.key_.c_str());
+
+            return true; // Insertion successful
+        }
+        catch (const std::exception& e) {
+            std::cerr << "捕获到异常: " << e.what() << std::endl;
+            return false; // Insertion failed
+        }
+    }
+
+    // 根据用户名获取用户信息
+    User getUser(const std::string& username) {
+        //const hinge_framework::Hash* hashedUsername = hinge_framework::retrieveHash(username.c_str(), HASH_FILE_PATH, this->aes256_key_.key_.c_str());
+        SQLite::Statement query(*db, "SELECT * FROM users WHERE username = ?");
+        query.bind(1, username);
+        if (query.executeStep()) {
+            std::string username = query.getColumn(0).getText();
+            std::string password = query.getColumn(1).getText();
+            return User(username, password);
+        }
+        throw std::runtime_error("User not found");
     }
 
     void insertStudent(const Student& student) {
@@ -123,6 +209,86 @@ public:
     }
 };
 
+// 密码输入
+void passwordInput(std::string& password) {
+    char ch;
+    while ((ch = getch()) != '\r') {
+        if (ch == '\b') {
+            if (!password.empty()) {
+                std::cout << "\b \b";
+                password.pop_back();
+            }
+        }
+        else {
+            password.push_back(ch);
+            std::cout << '*';
+        }
+    }
+    std::cout << std::endl;
+
+    return;
+}
+
+// 登录功能
+bool login(Database& db) {
+    std::string username, password;
+
+    std::cout << "Enter username: ";
+    std::cin >> username;
+    std::cout << "Enter password: ";
+    passwordInput(password);
+
+    const char* const KEY_ID = "8187b205-29a1-48ff-b73c-d9ff65ea7d9b";
+
+    hinge_framework::Aes256Cipher aes256;
+    hinge_framework::RsaCipher rsa;
+    hinge_framework::Key aes256_key;
+
+    try {
+        if (!aes256.isKeyExists(KEY_ID, KEY_FILE_PATH)) {
+            aes256_key = aes256.generateKey(KEY_ID);
+            aes256.writeKeyToFile(aes256_key, KEY_FILE_PATH);
+        }
+    }
+    catch (const std::exception e) {
+        std::cerr << "Capture to exception: " << e.what() << std::endl;
+    }
+
+    aes256_key = aes256.readKeyFromFile(KEY_ID, KEY_FILE_PATH);
+
+    try {
+        // 根据用户名获取用户信息
+        User user = db.getUser(username);
+        // 对比密码哈希值是否匹配
+        hinge_framework::Hash* hash = hinge_framework::retrieveHash(user.getPassword().c_str(), HASH_FILE_PATH, aes256_key.key_.c_str());
+        if (hash && hinge_framework::compareHashes(password.c_str(), *hinge_framework::retrieveHash(user.getPassword().c_str(), HASH_FILE_PATH, aes256_key.key_.c_str()))) {
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+    catch (const std::exception& e) {
+        //std::cerr << "User not found." << std::endl;
+        return false;
+    }
+}
+
+// 初始化超管用户名和密码
+void initializeSuperAdmin(Database& db) {
+    //// 初始化超管用户名和密码的哈希值
+    //hinge_framework::Hash usernameHash = { "6ac98c7ea5fc1d47159b410f49e7cc63898d8a8465a0ed66873fff0986694442", "a9mskT8lzOJFgBZxrfABfBA=" };
+    //hinge_framework::Hash passwordHash = { "9f91fa50d7f267629ce8a1396d5e97b1e8d993a2e4347a1ccdb5c77d3198352f", "a2sp0meqgupXmg9RvkqSaNjM62D3fw==" };
+
+    //// 存储超管用户名和密码的哈希值
+    //hinge_framework::storeHash(&usernameHash, "./assets-test/data/hash.db", "username");
+    //hinge_framework::storeHash(&passwordHash, "./assets-test/data/hash.db", "password");
+
+    // 创建超管用户对象并存储
+    User superAdmin("SUPERADMIN", "bugaosuni");
+    db.storeUser(superAdmin);
+}
+
 void showMainMenu() {
     std::cout << "----- Main Menu -----" << std::endl;
     std::cout << "1. Add Student" << std::endl;
@@ -149,9 +315,7 @@ std::string centerAlign(const std::string& text, uint16_t width) {
     return ss.str();
 }
 
-int32_t task0() {
-    const char* const KEY_FILE_PATH = "./assets-test/data/keys.ent";
-    const char* const DB_FILE_PATH = "./assets-test/data/scores.dat";
+static int32_t task0() {
     const char* const KEY_ID0 = "2898db5e-c31b-4837-946d-d4fc3f02ef09";
 
     const char* const INPUT_PATH = "./assets-test/input/scores.xlsx";
@@ -165,15 +329,15 @@ int32_t task0() {
         if (!aes256.isKeyExists(KEY_ID0, KEY_FILE_PATH)) {
             aes256_key0 = aes256.generateKey(KEY_ID0);
             if (aes256.writeKeyToFile(aes256_key0, KEY_FILE_PATH)) {
-                std::cout << "文件创建并写入成功！" << std::endl;
+                std::cout << "File creation and writing successfully!" << std::endl;
             }
             else {
-                std::cout << "文件创建并写入失败！" << std::endl;
+                std::cerr << "File creation and writing failed!" << std::endl;
             }
         }
     }
     catch (const std::exception e) {
-        std::cerr << "捕获到异常: " << e.what() << std::endl;
+        std::cerr << "Capture to exception: " << e.what() << std::endl;
     }
 
     aes256_key0 = aes256.readKeyFromFile(KEY_ID0, KEY_FILE_PATH);
@@ -184,8 +348,30 @@ int32_t task0() {
     std::cout << "Key ID: " << hinge_framework::sha3_256(aes256_key0.id_.c_str()).hash << "\n"
         << "Key: " << hinge_framework::sha3_256(aes256_key0.key_.c_str()).hash << "\n\n" << std::endl;
 
+    system("pause");
+    system("cls");
+
     Database db(DB_FILE_PATH, aes256_key0.key_);
     db.createTable();
+
+    // 初始化超管用户名和密码
+    initializeSuperAdmin(db);
+
+    bool loggedIn = false;
+    while (!loggedIn) {
+        loggedIn = login(db);
+        if (!loggedIn) {
+            system("cls");
+            std::cout << "Login failed: Invalid username or password, please try again.\n" << std::endl;
+            system("pause");
+        }
+        system("cls");
+    }
+
+    system("cls");
+    std::cout << "Login successful. Welcome!\n" << std::endl;
+    system("pause");
+    system("cls");
 
     int16_t choice;
     do {
@@ -350,11 +536,12 @@ int32_t task0() {
             break;
         }
         case 6: {
+            const char* input_path = INPUT_PATH;
+
             // 记录开始时间点
             auto start = std::chrono::high_resolution_clock::now();
 
             // Import database form Excel file
-            const char* input_path = INPUT_PATH;
             try {
                 if (db.importFromExcel(input_path)) {
                     // 记录结束时间点
@@ -390,13 +577,17 @@ int32_t task0() {
             break;
         }
         case 7: {
+            const char* const KEY_ID = "8187b205-29a1-48ff-b73c-d9ff65ea7d9b";
+            hinge_framework::Key hash_key = aes256.readKeyFromFile(KEY_ID, KEY_FILE_PATH);
+            const char* output_path = OUTPUT_PATH;
+            const char* hash_output_path = "./assets-test/output/hashes.xlsx";
+            Database hash_db(HASH_FILE_PATH, hash_key.key_);
 
             // 记录开始时间点
             auto start = std::chrono::high_resolution_clock::now();
 
             // Export database to Excel file
-            const char* output_path = OUTPUT_PATH;
-            if (db.exportToExcel(output_path)) {
+            if (db.exportToExcel(output_path) && hash_db.exportToExcel(hash_output_path)) {
                 // 记录结束时间点
                 auto end = std::chrono::high_resolution_clock::now();
 
@@ -438,7 +629,7 @@ int32_t task0() {
     return 0;
 }
 
-int32_t task1() {
+static int32_t task1() {
     const char* const KEY_FILE_PATH = "./assets-test/data/keys.ent";
     const char* const DB_FILE_PATH = "./assets-test/data/scores.dat";
     const char* const KEY_ID0 = "2898db5e-c31b-4837-946d-d4fc3f02ef09";
@@ -455,15 +646,15 @@ int32_t task1() {
         if (!aes256.isKeyExists(KEY_ID0, KEY_FILE_PATH)) {
             aes256_key0 = aes256.generateKey(KEY_ID0);
             if (aes256.writeKeyToFile(aes256_key0, KEY_FILE_PATH)) {
-                std::cout << "文件创建并写入成功！" << std::endl;
+                std::cout << "File creation and writing successfully!" << std::endl;
             }
             else {
-                std::cout << "文件创建并写入失败！" << std::endl;
+                std::cerr << "File creation and writing failed!" << std::endl;
             }
         }
     }
     catch (const std::exception e) {
-        std::cerr << "捕获到异常: " << e.what() << std::endl;
+        std::cerr << "Capture to exception: " << e.what() << std::endl;
     }
 
     aes256_key0 = aes256.readKeyFromFile(KEY_ID0, KEY_FILE_PATH);
@@ -477,7 +668,7 @@ int32_t task1() {
     return 0;
 }
 
-int32_t task2() {
+static int32_t task2() {
     std::string input;
 
     while (true) {
@@ -490,7 +681,7 @@ int32_t task2() {
         }
 
         const hinge_framework::Hash hashed_value = hinge_framework::sha3_256(input.c_str());
-        std::cout << "\nHashed value of '" << input << "': \n" 
+        std::cout << "\nHashed value of '" << input << "': \n"
             << hashed_value.hash << "\n"
             << "\nThe salt of this hash value is: \n"
             << hashed_value.salt << "\n"
@@ -504,7 +695,7 @@ int32_t task2() {
 }
 
 int32_t main(int32_t argc, char* argv[]) {
-    const int32_t main_return = task2();
+    const int32_t main_return = task0();
 
     system("pause");
     return main_return;

@@ -5,6 +5,7 @@
 #include <string>
 #include <openssl/evp.h>
 #include <openssl/rand.h>
+#include <SQLiteCpp/SQLiteCpp.h>
 
 #include "include/HingeFramework/Base64.h"
 
@@ -52,6 +53,7 @@ namespace hinge_framework {
                 EVP_MD_CTX_free(mdctx);
                 return result;
             }
+            strcpy_s(result.salt, salt);
         }
         else {
             // Generate random salt
@@ -94,8 +96,83 @@ namespace hinge_framework {
         return result;
     }
 
-    bool compareHashes(const char* plaintext, const Hash* hash) {
-        Hash computed_hash = sha3_256(plaintext, hash->salt);
-        return strcmp(computed_hash.hash, hash->hash) == 0;
+    bool compareHashes(const char* plaintext, const Hash hash) {
+        Hash computed_hash = sha3_256(plaintext, hash.salt);
+        return strcmp(computed_hash.hash, hash.hash) == 0;
+    }
+
+    bool storeHash(const Hash hash, const char* db_file_path, const char* db_password) {
+        // Open or create the SQLite database
+        SQLite::Database db(db_file_path, SQLite::OPEN_CREATE | SQLite::OPEN_READWRITE | SQLite::OPEN_FULLMUTEX);
+
+        if (db_password != nullptr && db_password[0] != '\0') {
+            db.key(db_password);
+        }
+
+        db.exec("CREATE TABLE IF NOT EXISTS Hashes (Hash TEXT PRIMARY KEY, Salt TEXT)");
+
+        // Check if the hash already exists
+        SQLite::Statement check_query(db, "SELECT COUNT(*) FROM Hashes WHERE Hash = ?");
+        check_query.bind(1, hash.hash);
+
+        if (check_query.executeStep()) {
+            uint16_t count = check_query.getColumn(0);
+            if (count > 0) {
+                // Hash already exists, return true
+                return true;
+            }
+        }
+
+        // Prepare insert query
+        SQLite::Statement query(db, "INSERT INTO Hashes (Hash, Salt) VALUES (?, ?)");
+        query.bind(1, hash.hash);
+        query.bind(2, hash.salt);
+
+        // Execute the insert query
+        try {
+            query.exec();
+        }
+        catch (std::exception& e) {
+            /*
+            * Handle exception (e.g., duplicate key)
+            */
+            return false;
+        }
+
+        return true;
+    }
+
+    Hash* retrieveHash(const char* hash_value, const char* db_file_path, const char* db_password) {
+        // Open the SQLite database
+        SQLite::Database db(db_file_path, SQLite::OPEN_READWRITE | SQLite::OPEN_FULLMUTEX);
+
+        if (db_password != nullptr && db_password[0] != '\0') {
+            db.key(db_password);
+        }
+
+        SQLite::Statement query(db, "SELECT Salt FROM Hashes WHERE Hash = ?");
+        query.bind(1, hash_value);
+
+        // Execute the query
+        try {
+            if (query.executeStep()) {
+                // If row exists, retrieve salt
+                std::string salt = query.getColumn(0);
+                Hash* result = new Hash;
+                strcpy_s(result->hash, hash_value);
+                strcpy_s(result->salt, salt.c_str());
+                return result;
+            }
+            else {
+                // If row does not exist, return nullptr
+                return nullptr;
+            }
+        }
+        catch (std::exception& e) {
+            /*
+            * Handle exception
+            */
+            return nullptr;
+        }
     }
 }

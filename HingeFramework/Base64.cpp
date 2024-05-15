@@ -3,34 +3,30 @@
 
 #include <string>
 #include <sstream>
-//#include <vector>
-//#include <algorithm>
+#include <vector>
+#include <memory>
 #include <boost/archive/iterators/base64_from_binary.hpp>
 #include <boost/archive/iterators/binary_from_base64.hpp>
 #include <boost/archive/iterators/transform_width.hpp>
-#include <boost/algorithm/string.hpp>
 
 namespace hinge_framework {
     //const std::string base64_chars =
     //    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
-    const std::string base64_padding[] = { "", "==","=" };
+    //const std::string base64_padding[] = { "", "==","=" };
 
     const char* encodeBase64(const char* plain_text) {
-        namespace bai = boost::archive::iterators;
+        using namespace boost::archive::iterators;
+        std::vector<unsigned char> binary(plain_text, plain_text + strlen(plain_text));
+        using It = base64_from_binary<transform_width<std::vector<unsigned char>::const_iterator, 6, 8>>;
+        auto base64 = std::string(It(binary.begin()), It(binary.end()));
+        // Add padding.
+        base64.append((3 - binary.size() % 3) % 3, '=');
 
-        std::stringstream os;
-
-        // convert binary values to base64 characters
-        typedef bai::base64_from_binary
-            // retrieve 6 bit integers from a sequence of 8 bit bytes
-            <bai::transform_width<const char*, 6, 8> > base64_enc; // compose all the above operations in to a new iterator
-
-        std::copy(base64_enc(plain_text), base64_enc(plain_text + ((std::string)plain_text).size()),
-            std::ostream_iterator<char>(os));
-
-        os << base64_padding[((std::string)plain_text).size() % 3];
-        return os.str().c_str();
+        // Allocate memory on the heap and copy the string
+        std::unique_ptr<char[]> result(new char[base64.size() + 1]);
+        strcpy_s(result.get(), base64.size() + 1, base64.c_str());
+        return result.release();
 
 
         //std::string base64_result;
@@ -77,25 +73,26 @@ namespace hinge_framework {
     }
 
     const char* decodeBase64(const char* base64_text) {
-        namespace bai = boost::archive::iterators;
-
-        std::stringstream os;
-
-        typedef bai::transform_width<bai::binary_from_base64<const char*>, 8, 6> base64_dec;
-
-        unsigned int size = ((std::string)base64_text).size();
-
-        // Remove the padding characters, cf. https://svn.boost.org/trac/boost/ticket/5629
-        if (size && base64_text[size - 1] == '=') {
-            --size;
-            if (size && base64_text[size - 1] == '=') --size;
+        using namespace boost::archive::iterators;
+        std::string base64(base64_text);
+        using It = transform_width<binary_from_base64<std::string::const_iterator>, 8, 6>;
+        std::vector<unsigned char> binary(It(base64.begin()), It(base64.end()));
+        // Remove padding.
+        auto length = base64.size();
+        if (binary.size() > 2 && base64[length - 1] == '=' && base64[length - 2] == '=')
+        {
+            binary.erase(binary.end() - 2, binary.end());
         }
-        if (size == 0) return std::string().c_str();
+        else if (binary.size() > 1 && base64[length - 1] == '=')
+        {
+            binary.erase(binary.end() - 1, binary.end());
+        }
 
-        std::copy(base64_dec(((std::string)base64_text).data()), base64_dec(((std::string)base64_text).data() + size),
-            std::ostream_iterator<char>(os));
-
-        return os.str().c_str();
+        // Allocate memory on the heap and copy the binary data
+        std::unique_ptr<char[]> result(new char[binary.size() + 1]);
+        memcpy(result.get(), binary.data(), binary.size());
+        result[binary.size()] = '\0';
+        return result.release();
 
 
         //std::string plain_result;
