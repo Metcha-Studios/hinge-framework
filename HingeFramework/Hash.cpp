@@ -15,7 +15,18 @@ namespace hinge_framework {
 
     // Generate a random salt
     void generateRandomSalt(char* salt) {
-        RAND_bytes((unsigned char*)salt, SALT_LENGTH);
+        unsigned char rand_bytes[SALT_LENGTH];
+
+        RAND_bytes(rand_bytes, SALT_LENGTH);
+
+        for (int i = 0; i < SALT_LENGTH; ++i) {
+            while (rand_bytes[i] == '\0') {
+                RAND_bytes(&rand_bytes[i], 1);
+            }
+            salt[i] = rand_bytes[i];
+        }
+
+        salt[SALT_LENGTH] = '\0';
     }
 
     Hash sha3_256(const char* str, const char* salt) {
@@ -102,7 +113,6 @@ namespace hinge_framework {
     }
 
     bool storeHash(const Hash hash, const char* db_file_path, const char* db_password) {
-        // Open or create the SQLite database
         SQLite::Database db(db_file_path, SQLite::OPEN_CREATE | SQLite::OPEN_READWRITE | SQLite::OPEN_FULLMUTEX);
 
         if (db_password != nullptr && db_password[0] != '\0') {
@@ -118,17 +128,14 @@ namespace hinge_framework {
         if (check_query.executeStep()) {
             uint16_t count = check_query.getColumn(0);
             if (count > 0) {
-                // Hash already exists, return true
                 return true;
             }
         }
 
-        // Prepare insert query
         SQLite::Statement query(db, "INSERT INTO Hashes (Hash, Salt) VALUES (?, ?)");
         query.bind(1, hash.hash);
         query.bind(2, hash.salt);
 
-        // Execute the insert query
         try {
             query.exec();
         }
@@ -143,7 +150,6 @@ namespace hinge_framework {
     }
 
     Hash* retrieveHash(const char* hash_value, const char* db_file_path, const char* db_password) {
-        // Open the SQLite database
         SQLite::Database db(db_file_path, SQLite::OPEN_READWRITE | SQLite::OPEN_FULLMUTEX);
 
         if (db_password != nullptr && db_password[0] != '\0') {
@@ -153,7 +159,6 @@ namespace hinge_framework {
         SQLite::Statement query(db, "SELECT Salt FROM Hashes WHERE Hash = ?");
         query.bind(1, hash_value);
 
-        // Execute the query
         try {
             if (query.executeStep()) {
                 // If row exists, retrieve salt
@@ -173,6 +178,36 @@ namespace hinge_framework {
             * Handle exception
             */
             return nullptr;
+        }
+    }
+
+    bool deleteHash(const char* hash_value, const char* db_file_path, const char* db_password) {
+        SQLite::Database db(db_file_path, SQLite::OPEN_READWRITE | SQLite::OPEN_FULLMUTEX);
+
+        if (db_password != nullptr && db_password[0] != '\0') {
+            db.key(db_password);
+        }
+
+        SQLite::Statement query(db, "DELETE FROM Hashes WHERE Hash = ?");
+        query.bind(1, hash_value);
+
+        try {
+            query.exec();
+        }
+        catch (std::exception& e) {
+            /*
+            * Handle exception (e.g., hash not found)
+            */
+            return false;
+        }
+
+        // Check if any row was affected (hash existed and got deleted)
+        bool changes = db.execAndGet("SELECT changes();").getInt();
+        if (changes > 0) {
+            return true;
+        }
+        else {
+            return false;
         }
     }
 }

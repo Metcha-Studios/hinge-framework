@@ -2,7 +2,9 @@
 #include "include/HingeFramework/Aes256Cipher.h"
 
 #include <random>
+#include <vector>
 #include <string>
+#include <sstream>
 #include <fstream>
 #include <filesystem>
 #include <stdexcept>
@@ -25,9 +27,14 @@ namespace hinge_framework {
 
     Aes256Cipher::Aes256Cipher() {
         OpenSSL_add_all_algorithms();
+        ctx = EVP_CIPHER_CTX_new();
+        if (!ctx) {
+            throw std::runtime_error("Error creating EVP_CIPHER_CTX");
+        }
     }
 
     Aes256Cipher::~Aes256Cipher() {
+        EVP_CIPHER_CTX_free(ctx);
         EVP_cleanup();
     }
 

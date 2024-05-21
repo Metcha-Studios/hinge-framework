@@ -2,10 +2,7 @@
 #ifndef CIPHER_H
 #define CIPHER_H
 
-#include <iostream>
 #include <string>
-#include <cstdint> // 用于 uint16_t
-#include <openssl/evp.h> // OpenSSL EVP_PKEY
 #include <nlohmann/json.hpp> // 用于 JSON 结构
 
 namespace hinge_framework {

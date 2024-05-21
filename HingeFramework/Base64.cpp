@@ -1,8 +1,8 @@
 #include "pch.h"
 #include "include/HingeFramework/Base64.h"
 
+#include <cstring>
 #include <string>
-#include <sstream>
 #include <vector>
 #include <memory>
 #include <boost/archive/iterators/base64_from_binary.hpp>
@@ -141,5 +141,45 @@ namespace hinge_framework {
         //}
 
         //return plain_result.c_str();
+    }
+
+    const char* encodeBase64FromStr(const std::string& plain_text) {
+        using namespace boost::archive::iterators;
+
+        std::vector<unsigned char> binary(plain_text.begin(), plain_text.end());
+
+        using It = base64_from_binary<transform_width<std::vector<unsigned char>::const_iterator, 6, 8>>;
+
+        auto base64 = std::string(It(binary.begin()), It(binary.end()));
+
+        base64.append((3 - binary.size() % 3) % 3, '=');
+
+        std::unique_ptr<char[]> result(new char[base64.size() + 1]);
+        strcpy_s(result.get(), base64.size() + 1, base64.c_str());
+
+        return result.release();
+    }
+
+    std::string decodeBase64ToStr(const char* base64_text) {
+        using namespace boost::archive::iterators;
+
+        std::string base64(base64_text);
+
+        using It = transform_width<binary_from_base64<std::string::const_iterator>, 8, 6>;
+
+        std::vector<unsigned char> binary(It(base64.begin()), It(base64.end()));
+
+        // Remove padding
+        auto length = base64.size();
+        if (binary.size() > 2 && base64[length - 1] == '=' && base64[length - 2] == '=')
+        {
+            binary.erase(binary.end() - 2, binary.end());
+        }
+        else if (binary.size() > 1 && base64[length - 1] == '=')
+        {
+            binary.erase(binary.end() - 1, binary.end());
+        }
+
+        return std::string(binary.begin(), binary.end());
     }
 }

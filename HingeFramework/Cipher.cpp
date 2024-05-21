@@ -94,7 +94,7 @@ tb/HErXAn5wHrxUoNAw9Q69K
         const std::string serialized_keys = keys_json.dump(4);
 
         // 使用 ENT 密钥加密 JSON 数据
-        const std::string encrypted_keys = rsa.encrypt(this->ent_key_pair_.public_key_, serialized_keys);
+        const char* encrypted_keys = rsa.encrypt(this->ent_key_pair_.public_key_, serialized_keys).c_str();
 
         // 确保文件所在路径存在
         std::filesystem::create_directories(std::filesystem::path(ent_file_path).parent_path());
@@ -104,7 +104,7 @@ tb/HErXAn5wHrxUoNAw9Q69K
         if (!out_file.is_open()) {
             throw std::runtime_error("Failed to create binary key file.");
         }
-        out_file.write(encrypted_keys.c_str(), encrypted_keys.size());
+        out_file.write(encrypted_keys, ((std::string)encrypted_keys).size());
         out_file.close();
 
         return keys_json;

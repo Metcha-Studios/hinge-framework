@@ -23,6 +23,7 @@ namespace hinge_framework {
     extern "C" HINGE_API bool compareHashes(const char* plaintext, const Hash hash);
     extern "C" HINGE_API bool storeHash(const Hash hash, const char* db_file_path, const char* db_password);
     extern "C" HINGE_API Hash * retrieveHash(const char* hash_value, const char* db_file_path, const char* db_password);
+    extern "C" HINGE_API bool deleteHash(const char* hash_value, const char* db_file_path, const char* db_password);
 }
 
 #endif // HASH_H

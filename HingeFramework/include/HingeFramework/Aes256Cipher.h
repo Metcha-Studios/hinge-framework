@@ -139,6 +139,8 @@ namespace hinge_framework {
         bool decryptDirectory(const std::string& key, const std::string input_directory, const std::string output_directory) const override;
 
     private:
+        mutable EVP_CIPHER_CTX* ctx;
+
         /**
          * @brief 将新的密钥追加到文件中。
          *

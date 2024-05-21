@@ -5,6 +5,7 @@
 #include <string>
 #include <sstream>
 #include <vector>
+#include <random>
 #include <conio.h>
 #include <SQLiteCpp/SQLiteCpp.h>
 #include <HingeFramework/Hash.h>
@@ -28,6 +29,19 @@ public:
 
     std::string getUsername() const { return this->username; }
     std::string getPassword() const { return this->password; }
+};
+
+// 哈希用户类
+class HashedUser {
+private:
+    std::string username;
+    hinge_framework::Hash password;
+
+public:
+    HashedUser(const std::string& username, const hinge_framework::Hash& password) : username(username), password(password) {}
+
+    std::string getUsername() const { return this->username; }
+    hinge_framework::Hash getPassword() const { return this->password; }
 };
 
 // 定义学生类
@@ -97,7 +111,7 @@ public:
             db->exec("CREATE TABLE IF NOT EXISTS TESTING_TABLE (TESTING_HEADER0 INTEGER PRIMARY KEY, TESTING_HEADER1 TEXT, TESTING_HEADER2 REAL)");
         }
         catch (const std::exception e) {
-            std::cerr << "捕获到异常: " << e.what() << std::endl;
+            std::cerr << "Exception caught: " << e.what() << std::endl;
         }
     }
 
@@ -128,8 +142,69 @@ public:
             return true; // Insertion successful
         }
         catch (const std::exception& e) {
-            std::cerr << "捕获到异常: " << e.what() << std::endl;
+            std::cerr << "Exception caught: " << e.what() << std::endl;
             return false; // Insertion failed
+        }
+    }
+
+    // 存储用户信息 - 直接使用哈希值的密码
+    bool storeUser(const HashedUser& user) {
+        try {
+            // Check if the user already exists
+            SQLite::Statement existQuery(*db, "SELECT COUNT(*) FROM users WHERE username = ?");
+            existQuery.bind(1, user.getUsername());
+            if (existQuery.executeStep()) {
+                int count = existQuery.getColumn(0).getInt();
+                if (count > 0) {
+                    std::cout << "User already exists." << std::endl;
+                    return false; // User already exists, return false
+                }
+            }
+
+            // User does not exist, insert the user
+            //const hinge_framework::Hash hashedPassword = hinge_framework::sha3_256(user.getPassword().c_str());
+            SQLite::Statement query(*db, "INSERT INTO users (username, password) VALUES (?, ?)");
+            query.bind(1, user.getUsername());
+            query.bind(2, user.getPassword().hash);
+            query.exec();
+
+            // Store the hashed password
+            hinge_framework::storeHash(user.getPassword(), HASH_FILE_PATH, this->aes256_key_.key_.c_str());
+
+            return true; // Insertion successful
+        }
+        catch (const std::exception& e) {
+            std::cerr << "Exception caught: " << e.what() << std::endl;
+            return false; // Insertion failed
+        }
+    }
+
+    bool deleteUserByUsername(const char* username) {
+        try {
+            // Check if the user exists
+            SQLite::Statement existQuery(*db, "SELECT COUNT(*) FROM users WHERE username = ?");
+            existQuery.bind(1, username);
+            if (existQuery.executeStep()) {
+                uint32_t count = existQuery.getColumn(0).getInt();
+                if (count == 0) {
+                    std::cout << "User does not exist." << std::endl;
+                    return false; // User does not exist, return false
+                }
+            }
+
+            User user = getUser(username);
+            hinge_framework::deleteHash(user.getPassword().c_str(), HASH_FILE_PATH, this->aes256_key_.key_.c_str());
+
+            // Delete user
+            SQLite::Statement deleteQuery(*db, "DELETE FROM users WHERE username = ?");
+            deleteQuery.bind(1, username);
+            deleteQuery.exec();
+
+            return true; // Deletion successful
+        }
+        catch (const std::exception& e) {
+            std::cerr << "Exception caught: " << e.what() << std::endl;
+            return false; // Deletion failed
         }
     }
 
@@ -211,6 +286,8 @@ public:
 
 // 密码输入
 void passwordInput(std::string& password) {
+    password.clear();
+
     char ch;
     while ((ch = getch()) != '\r') {
         if (ch == '\b') {
@@ -276,16 +353,47 @@ bool login(Database& db) {
 
 // 初始化超管用户名和密码
 void initializeSuperAdmin(Database& db) {
-    //// 初始化超管用户名和密码的哈希值
-    //hinge_framework::Hash usernameHash = { "6ac98c7ea5fc1d47159b410f49e7cc63898d8a8465a0ed66873fff0986694442", "a9mskT8lzOJFgBZxrfABfBA=" };
-    //hinge_framework::Hash passwordHash = { "9f91fa50d7f267629ce8a1396d5e97b1e8d993a2e4347a1ccdb5c77d3198352f", "a2sp0meqgupXmg9RvkqSaNjM62D3fw==" };
+    const char* const KEY_ID = "0aaa59e0-941b-4368-97d3-2f2382c1bf95";
 
-    //// 存储超管用户名和密码的哈希值
-    //hinge_framework::storeHash(&usernameHash, "./assets-test/data/hash.db", "username");
-    //hinge_framework::storeHash(&passwordHash, "./assets-test/data/hash.db", "password");
+    hinge_framework::Aes256Cipher aes256;
+    hinge_framework::Key aes256_key;
 
-    // 创建超管用户对象并存储
-    User superAdmin("SUPERADMIN", "bugaosuni");
+    try {
+        if (!aes256.isKeyExists(KEY_ID, KEY_FILE_PATH)) {
+            aes256_key = aes256.generateKey(KEY_ID);
+            aes256.writeKeyToFile(aes256_key, KEY_FILE_PATH);
+        }
+        else
+        {
+            std::cout << "Key is already exist!" << std::endl;
+        }
+    }
+    catch (const std::exception e) {
+        std::cerr << "Capture to exception: " << e.what() << std::endl;
+    }
+    aes256_key = aes256.readKeyFromFile(KEY_ID, KEY_FILE_PATH);
+
+    while (true)
+    {
+        std::string encrypted_text = hinge_framework::encodeBase64FromStr(aes256.encrypt(aes256_key.key_, "SUPERADMIN"));
+        std::cout << aes256_key.id_ << "\n" << aes256_key.key_ << std::endl;
+        std::cout << encrypted_text << std::endl;
+        std::cout << "Decrypted: " << aes256.decrypt(aes256_key.key_, hinge_framework::decodeBase64ToStr(encrypted_text.c_str())) << std::endl;
+
+        const char* base64_plaintext = "SSUUPPEERRAADDMMIINN";
+        const char* base64_encoded = hinge_framework::encodeBase64(base64_plaintext);
+        std::cout << "Encoded to Base64: " << base64_encoded << std::endl;
+        std::cout << "Decoded from Base64: " << hinge_framework::decodeBase64(base64_encoded) << std::endl;
+
+        system("pause");
+        system("cls");
+    }
+
+    hinge_framework::Hash password = {
+        "83ad8f1c0a8fb36f50a5c79ada20e1929a0b39ffdb78998e35e6947c5053f984",
+        "7Vym725kf3iyYHbg9GApmQ=="
+    };
+    HashedUser superAdmin("SUPERADMIN", password);
     db.storeUser(superAdmin);
 }
 
@@ -298,7 +406,9 @@ void showMainMenu() {
     std::cout << "5. Show All Students" << std::endl;
     std::cout << "6. Import from Excel" << std::endl;
     std::cout << "7. Export to Excel" << std::endl;
-    std::cout << "8. Exit" << std::endl;
+    std::cout << "8. Register New User" << std::endl;
+    std::cout << "9. Delete User" << std::endl;
+    std::cout << "10. Exit" << std::endl;
 }
 
 std::string centerAlign(const std::string& text, uint16_t width) {
@@ -353,6 +463,24 @@ static int32_t task0() {
 
     Database db(DB_FILE_PATH, aes256_key0.key_);
     db.createTable();
+
+    //for (int i = 10001; i <= 10100; ++i) {
+    //    std::string new_username = "LZM" + std::to_string(i);
+    //    std::string new_password = "123456";
+
+    //    // Create new user object
+    //    User new_user(new_username, new_password);
+
+    //    // Attempt to store the user in the database
+    //    if (db.storeUser(new_user)) {
+    //        std::cout << "User \"" << new_username << "\" was added successfully!" << std::endl;
+    //    }
+    //    else {
+    //        std::cout << "Adding user \"" << new_username << "\" failed!" << std::endl;
+    //    }
+    //}
+    //system("pause");
+    //system("cls");
 
     // 初始化超管用户名和密码
     initializeSuperAdmin(db);
@@ -616,15 +744,114 @@ static int32_t task0() {
             system("cls");
             break;
         }
-        case 8:
+        case 8: {
+            // 添加账户
+            std::string new_username, new_password, confirm_password;
+
+            do {
+                std::cout << "Enter new username: ";
+                std::cin >> new_username;
+
+                std::cout << "Enter new password: ";
+                passwordInput(new_password);
+
+                std::cout << "Confirm password: ";
+                passwordInput(confirm_password);
+
+                if (new_password != confirm_password) {
+                    system("cls");
+                    std::cout << "Passwords do not match. Please try again." << std::endl;
+                    system("pause");
+                    system("cls");
+                }
+            } while (new_password != confirm_password);
+            system("cls");
+
+            // 记录开始时间点
+            auto start = std::chrono::high_resolution_clock::now();
+
+            // Create a super admin object and store it
+            User new_user(new_username, new_password);
+            if (db.storeUser(new_user)) {
+                // 记录结束时间点
+                auto end = std::chrono::high_resolution_clock::now();
+
+                // 计算执行时间
+                auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+
+                std::cout << "User \"" << new_username << "\" was added successfully!" << std::endl;
+
+                // 输出执行时间
+                std::cout << "\nExecution time: " << duration.count() << " ms\n" << std::endl;
+            }
+            else
+            {
+                // 记录结束时间点
+                auto end = std::chrono::high_resolution_clock::now();
+
+                // 计算执行时间
+                auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+
+                std::cout << "Adding user \"" << new_username << "\" failed!" << std::endl;
+
+                // 输出执行时间
+                std::cout << "\nExecution time: " << duration.count() << " ms\n" << std::endl;
+            }
+
+            system("pause");
+            system("cls");
+            break;
+        }
+        case 9: {
+            // 注销账户
+            std::string username;
+
+            std::cout << "Enter the username you want to delete: ";
+            std::cin >> username;
+            system("cls");
+
+            // 记录开始时间点
+            auto start = std::chrono::high_resolution_clock::now();
+
+            if (db.deleteUserByUsername(username.c_str())) {
+                // 记录结束时间点
+                auto end = std::chrono::high_resolution_clock::now();
+
+                // 计算执行时间
+                auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+
+                std::cout << "User \"" << username << "\" was deleted successfully!" << std::endl;
+
+                // 输出执行时间
+                std::cout << "\nExecution time: " << duration.count() << " ms\n" << std::endl;
+            }
+            else
+            {
+                // 记录结束时间点
+                auto end = std::chrono::high_resolution_clock::now();
+
+                // 计算执行时间
+                auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+
+                std::cout << "Deleting user \"" << username << "\" failed!" << std::endl;
+
+                // 输出执行时间
+                std::cout << "\nExecution time: " << duration.count() << " ms\n" << std::endl;
+            }
+
+            system("pause");
+            system("cls");
+            break;
+        }
+        case 10:
             std::cout << "Exiting program..." << std::endl;
             break;
         default:
-            std::cout << "Invalid choice. Please enter a number between 1 and 5." << std::endl;
+            std::cout << "Invalid choice. Please enter a number between 1 and 10." << std::endl;
             system("pause");
             system("cls");
         }
-    } while (choice != 8);
+    } while (choice != 10);
 
     return 0;
 }

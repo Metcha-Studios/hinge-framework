@@ -3,6 +3,8 @@
 
 #include <math.h>
 #include <string>
+#include <sstream>
+#include <iomanip>
 #include <fstream>
 #include <filesystem>
 #include <stdexcept>
@@ -277,7 +279,7 @@ namespace hinge_framework {
         // 以二进制模式打开输入文件
         std::ifstream input_file(input_file_path, std::ios::binary);
         if (!input_file.is_open()) {
-            std::cerr << "Failed to open input file: " << input_file_path << std::endl;
+            throw std::runtime_error("Failed to open input file: " + (std::string)input_file_path);
             return false;
         }
 
@@ -287,7 +289,7 @@ namespace hinge_framework {
         // 以二进制模式创建输出文件
         std::ofstream output_file(output_file_path, std::ios::binary);
         if (!output_file.is_open()) {
-            std::cerr << "Failed to create output file: " << output_file_path << std::endl;
+            throw std::runtime_error("Failed to create output file: " + (std::string)output_file_path);
             input_file.close();
             return false;
         }
@@ -322,7 +324,7 @@ namespace hinge_framework {
         // 以二进制模式打开输入文件
         std::ifstream input_file(input_file_path, std::ios::binary);
         if (!input_file.is_open()) {
-            std::cerr << "Failed to open input file: " << input_file_path << std::endl;
+            throw std::runtime_error("Failed to open input file: " + (std::string)input_file_path);
             return false;
         }
 
@@ -332,7 +334,7 @@ namespace hinge_framework {
         // 以二进制模式创建输出文件
         std::ofstream output_file(output_file_path, std::ios::binary);
         if (!output_file.is_open()) {
-            std::cerr << "Failed to create output file: " << output_file_path << std::endl;
+            throw std::runtime_error("Failed to create output file: " + (std::string)output_file_path);
             input_file.close();
             return false;
         }
@@ -376,7 +378,7 @@ namespace hinge_framework {
             return true;
         }
         catch (const std::exception& e) {
-            std::cerr << "Error during encryption: " << e.what() << std::endl;
+            throw std::runtime_error("Error during encryption: " + (std::string)e.what());
             return false;
         }
     }
@@ -394,7 +396,7 @@ namespace hinge_framework {
             return true;
         }
         catch (const std::exception& e) {
-            std::cerr << "Error during decryption: " << e.what() << std::endl;
+            throw std::runtime_error("Error during decryption: " + (std::string)e.what());
             return false;
         }
     }
@@ -426,7 +428,8 @@ namespace hinge_framework {
 
         // 检查密钥是否已存在
         if (isKeyExists(key_pair.id_, file_path)) {
-            std::cerr << "Key with ID '" << key_pair.id_ << "' already exists in the file '" << file_path << "'.\n";
+            //std::cerr << "Key with ID '" << key_pair.id_ << "' already exists in the file '" << file_path << "'.\n";
+            throw std::runtime_error("Key with ID '" + key_pair.id_ + "' already exists in the file '" + file_path);
             return false;
         }
 
