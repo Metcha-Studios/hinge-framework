@@ -115,7 +115,24 @@ public:
         }
     }
 
-    // 存储用户信息
+    bool verifyPassword(const std::string& username, const std::string& password) {
+        try {
+            User user = getUser(username);
+
+            hinge_framework::Hash* hash = hinge_framework::retrieveHash(user.getPassword().c_str(), HASH_FILE_PATH, aes256_key_.key_.c_str());
+            if (hash && hinge_framework::compareHashes(password.c_str(), *hash)) {
+                return true;
+            }
+            else {
+                return false;
+            }
+        }
+        catch (const std::exception& e) {
+            std::cerr << "Exception caught: " << e.what() << std::endl;
+            return false;
+        }
+    }
+
     bool storeUser(const User& user) {
         try {
             // Check if the user already exists
@@ -147,7 +164,6 @@ public:
         }
     }
 
-    // 存储用户信息 - 直接使用哈希值的密码
     bool storeUser(const HashedUser& user) {
         try {
             // Check if the user already exists
@@ -205,6 +221,40 @@ public:
         catch (const std::exception& e) {
             std::cerr << "Exception caught: " << e.what() << std::endl;
             return false; // Deletion failed
+        }
+    }
+
+    bool changeUserPassword(const char* username, const char* new_password) {
+        try {
+            // Check if the user exists
+            SQLite::Statement existQuery(*this->db, "SELECT COUNT(*) FROM users WHERE username = ?");
+            existQuery.bind(1, username);
+            if (existQuery.executeStep()) {
+                uint32_t count = existQuery.getColumn(0).getInt();
+                if (count == 0) {
+                    std::cout << "User does not exist." << std::endl;
+                    return false; // User doesn`t exists, return false
+                }
+            }
+
+            hinge_framework::Hash new_hashed_password = hinge_framework::sha3_256(new_password);
+            User old_user_info = getUser(username);
+
+            // Update the hash value of the new password from this database
+            SQLite::Statement updateQuery(*this->db, "UPDATE users SET password = ? WHERE username = ?");
+            updateQuery.bind(1, new_hashed_password.hash);
+            updateQuery.bind(2, username);
+            updateQuery.exec();
+
+            // Update the hash value of the new password from the file of this database
+            hinge_framework::deleteHash(old_user_info.getPassword().c_str(), HASH_FILE_PATH, aes256_key_.key_.c_str()); // Delete the old hash value
+            hinge_framework::storeHash(new_hashed_password, HASH_FILE_PATH, aes256_key_.key_.c_str()); // Store the new hash value
+
+            return true; // Alter password successfully
+        }
+        catch (const std::exception& e) {
+            std::cerr << "Exception caught: " << e.what() << std::endl;
+            return false; // Alter password failed
         }
     }
 
@@ -315,35 +365,8 @@ bool login(Database& db) {
     std::cout << "Enter password: ";
     passwordInput(password);
 
-    const char* const KEY_ID = "8187b205-29a1-48ff-b73c-d9ff65ea7d9b";
-
-    hinge_framework::Aes256Cipher aes256;
-    hinge_framework::RsaCipher rsa;
-    hinge_framework::Key aes256_key;
-
     try {
-        if (!aes256.isKeyExists(KEY_ID, KEY_FILE_PATH)) {
-            aes256_key = aes256.generateKey(KEY_ID);
-            aes256.writeKeyToFile(aes256_key, KEY_FILE_PATH);
-        }
-    }
-    catch (const std::exception e) {
-        std::cerr << "Capture to exception: " << e.what() << std::endl;
-    }
-
-    aes256_key = aes256.readKeyFromFile(KEY_ID, KEY_FILE_PATH);
-
-    try {
-        // 根据用户名获取用户信息
-        User user = db.getUser(username);
-        // 对比密码哈希值是否匹配
-        hinge_framework::Hash* hash = hinge_framework::retrieveHash(user.getPassword().c_str(), HASH_FILE_PATH, aes256_key.key_.c_str());
-        if (hash && hinge_framework::compareHashes(password.c_str(), *hinge_framework::retrieveHash(user.getPassword().c_str(), HASH_FILE_PATH, aes256_key.key_.c_str()))) {
-            return true;
-        }
-        else {
-            return false;
-        }
+        return db.verifyPassword(username, password);
     }
     catch (const std::exception& e) {
         //std::cerr << "User not found." << std::endl;
@@ -373,27 +396,11 @@ void initializeSuperAdmin(Database& db) {
     }
     aes256_key = aes256.readKeyFromFile(KEY_ID, KEY_FILE_PATH);
 
-    while (true)
-    {
-        std::string encrypted_text = hinge_framework::encodeBase64FromStr(aes256.encrypt(aes256_key.key_, "SUPERADMIN"));
-        std::cout << aes256_key.id_ << "\n" << aes256_key.key_ << std::endl;
-        std::cout << encrypted_text << std::endl;
-        std::cout << "Decrypted: " << aes256.decrypt(aes256_key.key_, hinge_framework::decodeBase64ToStr(encrypted_text.c_str())) << std::endl;
-
-        const char* base64_plaintext = "SSUUPPEERRAADDMMIINN";
-        const char* base64_encoded = hinge_framework::encodeBase64(base64_plaintext);
-        std::cout << "Encoded to Base64: " << base64_encoded << std::endl;
-        std::cout << "Decoded from Base64: " << hinge_framework::decodeBase64(base64_encoded) << std::endl;
-
-        system("pause");
-        system("cls");
-    }
-
     hinge_framework::Hash password = {
         "83ad8f1c0a8fb36f50a5c79ada20e1929a0b39ffdb78998e35e6947c5053f984",
         "7Vym725kf3iyYHbg9GApmQ=="
     };
-    HashedUser superAdmin("SUPERADMIN", password);
+    HashedUser superAdmin(aes256.decrypt(aes256_key.key_, hinge_framework::decodeBase64ToStr("pWElj4XrpwOeG/blBAfp4DdOMO9mTgZWt7y79saKwII=")).c_str(), password);
     db.storeUser(superAdmin);
 }
 
@@ -408,7 +415,8 @@ void showMainMenu() {
     std::cout << "7. Export to Excel" << std::endl;
     std::cout << "8. Register New User" << std::endl;
     std::cout << "9. Delete User" << std::endl;
-    std::cout << "10. Exit" << std::endl;
+    std::cout << "10. Change Password of User" << std::endl;
+    std::cout << "11. Exit" << std::endl;
 }
 
 std::string centerAlign(const std::string& text, uint16_t width) {
@@ -627,12 +635,15 @@ static int32_t task0() {
             break;
         }
         case 5: {
+            const uint16_t LINE_LENGTH = 48;
+
             // 记录开始时间点
             auto start = std::chrono::high_resolution_clock::now();
 
-            const uint16_t LINE_LENGTH = 48;
-
             std::vector<Student> allStudents = db.getAllStudents();
+
+            // 记录结束时间点
+            auto end = std::chrono::high_resolution_clock::now();
 
             std::ostringstream output;
 
@@ -647,9 +658,6 @@ static int32_t task0() {
             }
 
             output << std::setfill('-') << std::setw(LINE_LENGTH) << "" << std::setfill(' ') << std::endl;
-
-            // 记录结束时间点
-            auto end = std::chrono::high_resolution_clock::now();
 
             // 计算执行时间
             auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
@@ -843,15 +851,78 @@ static int32_t task0() {
             system("cls");
             break;
         }
-        case 10:
+        case 10: {
+            // Change password of user
+            std::string username, old_password, new_password0, new_password1;
+
+            while (true)
+            {
+                std::cout << "Enter the username you want to change password: ";
+                std::cin >> username;
+                std::cout << "Enter the original password of the user: ";
+                passwordInput(old_password);
+                system("cls");
+
+                if (!db.verifyPassword(username, old_password)) {
+                    system("cls");
+                    std::cout << "Wrong password, please re-enter.\n" << std::endl;
+                    system("pause");
+                    system("cls");
+                    continue;
+                }
+                system("cls");
+                std::cout << "Verified, tap Enter to type new password.\n" << std::endl;
+                system("pause");
+                system("cls");
+                break;
+            }
+
+            while (true)
+            {
+                std::cout << "Please enter your new password: ";
+                passwordInput(new_password0);
+                system("cls");
+                std::cout << "Please re-enter your new password to confirm: ";
+                passwordInput(new_password1);
+                system("cls");
+
+                if (!(new_password0 == new_password1)) {
+                    system("cls");
+                    std::cout << "Password does not match, please re-enter.\n" << std::endl;
+                    system("pause");
+                    system("cls");
+                    continue;
+                }
+                system("cls");
+
+                // 记录开始时间点
+                auto start = std::chrono::high_resolution_clock::now();
+
+                db.changeUserPassword(username.c_str(), new_password0.c_str());
+
+                // 记录结束时间点并计算执行时间
+                auto end = std::chrono::high_resolution_clock::now();
+                auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+
+                std::cout << "Password changed successfully!\nTap Enter to return to the main menu.\n"
+                    << "\nExecution time: " << duration.count() << " ms\n" << std::endl;
+                break;
+            }
+
+            system("pause");
+            system("cls");
+            break;
+        }
+        case 11: {
             std::cout << "Exiting program..." << std::endl;
             break;
+        }
         default:
             std::cout << "Invalid choice. Please enter a number between 1 and 10." << std::endl;
             system("pause");
             system("cls");
         }
-    } while (choice != 10);
+    } while (choice != 11);
 
     return 0;
 }

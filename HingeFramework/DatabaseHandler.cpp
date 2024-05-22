@@ -327,7 +327,7 @@ void hinge_framework::DatabaseHandler::setRowHeightAndColumnWidth(libxl::Sheet* 
                 width = cell_data.length();
             }
         }
-        sheet->setCol(i, i, (width + 8 < 20) ? 20 : width + 8);
+        sheet->setCol(i, i, (width + 16 < 20) ? 20 : width + 16);
     }
 }
 
