@@ -8,7 +8,7 @@
 #define HINGE_API __declspec(dllexport)
 #else
 #define HINGE_API __declspec(dllimport)
-#endif
+#endif // HINGE_EXPORTS
 
 #endif // HINGE_API
 
@@ -18,7 +18,7 @@
 #include <openssl/evp.h> // OpenSSL EVP_PKEY
 #include <nlohmann/json.hpp> // 用于 JSON 结构
 
-#include "../../Cipher.h"
+#include "Cipher.h"
 
 namespace hinge_framework {
     /**
@@ -139,6 +139,8 @@ namespace hinge_framework {
         bool decryptDirectory(const std::string& key, const std::string input_directory, const std::string output_directory) const override;
 
     private:
+        mutable EVP_CIPHER_CTX* ctx;
+
         /**
          * @brief 将新的密钥追加到文件中。
          *
