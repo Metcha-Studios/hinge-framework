@@ -391,7 +391,7 @@ namespace hinge_framework {
     * private:
     */
 
-    bool Aes256Cipher::appendKeyToFile(const Key& key, const char* file_path) {
+    bool Aes256Cipher::appendKeyToFile(const Key& key, const char* file_path) const {
         nlohmann::ordered_json keys_json;
         const RsaCipher rsa;
 

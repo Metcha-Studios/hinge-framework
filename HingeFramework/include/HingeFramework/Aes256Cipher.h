@@ -148,7 +148,7 @@ namespace hinge_framework {
          * @param file_path 密钥文件路径
          * @return 是否成功追加
          */
-        bool appendKeyToFile(const Key& key, const char* file_path);
+        bool appendKeyToFile(const Key& key, const char* file_path) const;
     };
 }
 
