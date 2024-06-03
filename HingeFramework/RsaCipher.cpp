@@ -30,7 +30,7 @@ namespace hinge_framework {
         EVP_cleanup();
     }
 
-    KeyPair RsaCipher::generateKeyPair(const uint16_t key_length) {
+    KeyPair RsaCipher::generateKeyPair(const uint16_t key_length) const {
         KeyPair key_pair;
 
         key_pair.id_ = hinge_framework::uuidV4Generator();
@@ -72,7 +72,7 @@ namespace hinge_framework {
         return key_pair;
     }
 
-    KeyPair RsaCipher::generateKeyPair(const uint16_t key_length, const char* key_id) {
+    KeyPair RsaCipher::generateKeyPair(const uint16_t key_length, const char* key_id) const {
         KeyPair key_pair;
 
         key_pair.id_ = key_id;
@@ -134,7 +134,7 @@ namespace hinge_framework {
         return is_succeed;
     }
 
-    KeyPair RsaCipher::readKeyFromFile(const char* key_id, const char* file_path) {
+    KeyPair RsaCipher::readKeyFromFile(const char* key_id, const char* file_path) const {
         KeyPair key_pair;
 
         // ¶ÁÈ¡ÃÜÔ¿ÎÄ¼þ

@@ -41,7 +41,7 @@ namespace hinge_framework {
          * @param key_length RSA 密钥长度
          * @return 生成的 RSA 密钥对
          */
-        KeyPair generateKeyPair(const uint16_t key_length);
+        KeyPair generateKeyPair(const uint16_t key_length) const;
 
         /**
          * @brief 生成指定长度和 ID 的 RSA 密钥对。
@@ -50,7 +50,7 @@ namespace hinge_framework {
          * @param key_id RSA 密钥 ID
          * @return 生成的 RSA 密钥对
          */
-        KeyPair generateKeyPair(const uint16_t key_length, const char* key_id);
+        KeyPair generateKeyPair(const uint16_t key_length, const char* key_id) const;
 
         /**
          * @brief 将密钥对写入文件。
@@ -68,7 +68,7 @@ namespace hinge_framework {
          * @param file_path 密钥文件路径
          * @return 读取的密钥对
          */
-        KeyPair readKeyFromFile(const char* key_id, const char* file_path);
+        KeyPair readKeyFromFile(const char* key_id, const char* file_path) const;
 
         /**
          * @brief 检查密钥是否存在于密钥文件中。

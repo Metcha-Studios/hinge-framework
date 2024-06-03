@@ -42,7 +42,7 @@ namespace hinge_framework {
          * @param key_length AES 密钥长度
          * @return 生成的 AES 密钥
          */
-        Key generateKey();
+        Key generateKey() const;
 
         /**
          * @brief 生成指定长度和 ID 的 AES 密钥。
@@ -51,7 +51,7 @@ namespace hinge_framework {
          * @param key_id AES 密钥 ID
          * @return 生成的 AES 密钥
          */
-        Key generateKey(const char* key_id);
+        Key generateKey(const char* key_id) const;
 
         /**
          * @brief 将密钥写入文件。
@@ -60,7 +60,7 @@ namespace hinge_framework {
          * @param file_path 密钥文件路径
          * @return 写入是否成功
          */
-        bool writeKeyToFile(const Key& key, const char* file_path);
+        bool writeKeyToFile(const Key& key, const char* file_path) const;
 
         /**
          * @brief 从文件中读取指定 ID 的密钥。
@@ -69,7 +69,7 @@ namespace hinge_framework {
          * @param file_path 密钥文件路径
          * @return 读取的密钥
          */
-        Key readKeyFromFile(const char* key_id, const char* file_path);
+        Key readKeyFromFile(const char* key_id, const char* file_path) const;
 
         /**
          * @brief 检查密钥是否存在于密钥文件中。
@@ -148,7 +148,7 @@ namespace hinge_framework {
          * @param file_path 密钥文件路径
          * @return 是否成功追加
          */
-        bool appendKeyToFile(const Key& key, const char* file_path);
+        bool appendKeyToFile(const Key& key, const char* file_path) const;
     };
 }
 
