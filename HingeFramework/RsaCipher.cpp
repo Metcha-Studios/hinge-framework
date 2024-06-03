@@ -464,7 +464,7 @@ namespace hinge_framework {
         if (!out_file.is_open()) {
             throw std::runtime_error("Failed to open file for writing.");
         }
-        out_file.write(encrypted_keys.c_str(), encrypted_keys.size());
+        out_file.write(encrypted_keys.data(), encrypted_keys.size());
         out_file.close();
 
         return true;

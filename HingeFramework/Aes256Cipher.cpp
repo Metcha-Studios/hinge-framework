@@ -38,7 +38,7 @@ namespace hinge_framework {
         EVP_cleanup();
     }
 
-    Key Aes256Cipher::generateKey() {
+    Key Aes256Cipher::generateKey() const {
         Key key;
 
         const char* const CHARSET = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -64,7 +64,7 @@ namespace hinge_framework {
         return key;
     }
 
-    Key Aes256Cipher::generateKey(const char* key_id) {
+    Key Aes256Cipher::generateKey(const char* key_id) const {
         Key key;
 
         const char* const CHARSET = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -90,7 +90,7 @@ namespace hinge_framework {
         return key;
     }
 
-    bool Aes256Cipher::writeKeyToFile(const Key& key, const char* file_path) {
+    bool Aes256Cipher::writeKeyToFile(const Key& key, const char* file_path) const {
         bool is_succeed;
         // 检查文件是否存在
         std::ifstream file_exists(file_path);
@@ -110,7 +110,7 @@ namespace hinge_framework {
         return is_succeed;
     }
 
-    Key Aes256Cipher::readKeyFromFile(const char* key_id, const char* file_path) {
+    Key Aes256Cipher::readKeyFromFile(const char* key_id, const char* file_path) const {
         const RsaCipher rsa;
         Key key;
 
@@ -429,7 +429,7 @@ namespace hinge_framework {
         if (!out_file.is_open()) {
             throw std::runtime_error("Failed to open file for writing.");
         }
-        out_file.write(encrypted_keys.c_str(), encrypted_keys.size());
+        out_file.write(encrypted_keys.data(), encrypted_keys.size());
         out_file.close();
 
         return true;
